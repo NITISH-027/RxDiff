@@ -28,3 +28,39 @@ Stage 1 provides a production-ready React, TypeScript, Vite, Tailwind, and Vites
 - **Case A (Regimen Changes):** Metformin frequency changed, Amlodipine unchanged, Atorvastatin explicitly stopped, Rosuvastatin started, Pantoprazole unchanged.
 - **Case B (Omission Safety):** Levothyroxine unchanged; Calcium carbonate absent from AFTER list yields `needs_confirmation`.
 - **Case C (Alias & Duplicates):** Glucophage and Metformin matched via transparent alias table with `possible_duplicate` flagged for redundant AFTER orders.
+
+## Stage 3: Live Image Extraction (Gemini 3.6 Flash)
+
+Stage 3 adds real BEFORE/AFTER medication document image extraction via a secure Vercel-compatible serverless endpoint (`api/extract.ts`) and the verified `gemini-3.6-flash` model.
+
+### Environment Setup
+1. Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+2. Populate the required environment variables in `.env.local`:
+   ```env
+   # Google Gemini API key (server-side only; never expose to client)
+   GEMINI_API_KEY=your_api_key_here
+
+   # Verified model ID for multimodal structured extraction
+   GEMINI_MODEL=gemini-3.6-flash
+
+   # Set to true for non-production automated mock testing
+   RXDIFF_MOCK_EXTRACTION=false
+   ```
+   > `.env.local` is ignored by Git and must never be committed.
+
+### Local Development & Vercel Deployment
+- **Local Dev Server**: Run `npm run dev`. The Vite development server automatically routes `/api/extract` to the serverless handler and reads `.env.local`.
+- **Vercel CLI**: Alternatively, run `vercel dev` to test in the exact Vercel local environment.
+- **Production Deployment**: Deploy to Vercel via Git integration or `vercel deploy`. In the Vercel dashboard, configure `GEMINI_API_KEY` and `GEMINI_MODEL` under Project Settings → Environment Variables.
+
+### Security, Privacy, and Fail-Closed Validation
+- **Server-Side Only Secrets**: `GEMINI_API_KEY` is never bundled with Vite or exposed to the client.
+- **In-Memory Processing**: Images are processed strictly in-memory (max 5 MB each; JPEG, PNG, WebP) and never written to disk or external storage.
+- **Prompt Injection Defense**: Image content is treated as untrusted data, never instructions.
+- **Verbatim Evidence Verification**: Every extracted mention must contain a non-empty `evidence_quote` matching the raw line text.
+- **No Brand-to-Generic Mapping by Model**: `normalized_name` is strictly a deterministic lowercase cleanup of the printed name.
+- **Model Never Classifies**: The model acts solely as an OCR and structured entity extractor; the deterministic `diffEngine` performs 100% of the medication reconciliation classification.
+

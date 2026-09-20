@@ -23,3 +23,22 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     dispatchEvent: () => false,
   });
 }
+
+// Polyfill URL.createObjectURL and URL.revokeObjectURL for JSDOM
+if (typeof URL !== 'undefined') {
+  if (!URL.createObjectURL) {
+    URL.createObjectURL = () => 'blob:mock-object-url';
+  } else {
+    const originalCreate = URL.createObjectURL;
+    URL.createObjectURL = (obj: Blob | MediaSource) => {
+      try {
+        return originalCreate(obj);
+      } catch {
+        return 'blob:mock-object-url';
+      }
+    };
+  }
+  if (!URL.revokeObjectURL) {
+    URL.revokeObjectURL = () => {};
+  }
+}
