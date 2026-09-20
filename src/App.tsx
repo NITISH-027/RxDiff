@@ -7,6 +7,7 @@ import { PrintHandoff } from './components/PrintHandoff.js';
 import { WarningIcon, PrinterIcon } from './components/Icons.js';
 import { ImageUploadDropzone } from './components/ImageUploadDropzone.js';
 import { EditorialHero } from './components/EditorialHero.js';
+import { StoryIntro } from './components/StoryIntro.js';
 import { liveGeminiProvider } from './services/extraction/liveGeminiProvider.js';
 import type { ExtractionStage, LiveExtractionSuccess } from './services/extraction/types.js';
 
@@ -164,8 +165,13 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1A1D20] flex flex-col selection:bg-[#3D5A4C]/20 selection:text-[#1A1D20]">
-      {/* 54px Minimal Editorial Frame Top Bar */}
-      <header className="no-print sticky top-0 bg-white/95 backdrop-blur-sm border-b border-[#E5E0D8] px-4 sm:px-6 h-[54px] flex items-center justify-between gap-3 select-none z-30 shadow-xs">
+      {/* STAGE 5: Visual Narrative Scroll Story Intro */}
+      <StoryIntro />
+
+      {/* Main Reconciliation Tool */}
+      <div id="app" className="min-h-screen flex flex-col">
+        {/* 54px Minimal Editorial Frame Top Bar */}
+        <header className="no-print sticky top-0 bg-white/95 backdrop-blur-sm border-b border-[#E5E0D8] px-4 sm:px-6 h-[54px] flex items-center justify-between gap-3 select-none z-30 shadow-xs">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-2.5 shrink-0">
           <span className="font-serif text-[17px] font-semibold tracking-tight text-[#1A1D20]">
@@ -584,6 +590,7 @@ export function App() {
           </div>
         )}
       </main>
+      </div>
 
       {/* Dedicated Print Handoff Sheet */}
       <PrintHandoff model={activePresentationModel} />
