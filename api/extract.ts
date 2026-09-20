@@ -341,7 +341,7 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
 
   // 5. Check environment configuration (missing config: 503)
   const apiKey = process.env.GEMINI_API_KEY;
-  const modelId = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const modelId = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
   if (!apiKey || !apiKey.trim()) {
     console.log(`[REQ ${requestId}] Outcome: 503 EXTRACTION_NOT_CONFIGURED`);
@@ -353,11 +353,17 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
     );
   }
 
-  // 6. Call Gemini model once with both labeled images
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
-
-  const abortController = new AbortController();
-  const timeoutId = setTimeout(() => abortController.abort(), 25000); // 25s timeout
+  // 6. Call Gemini model with automatic retry and model fallback for demand spikes
+  const candidateModels = Array.from(
+    new Set([
+      modelId,
+      'gemini-3.5-flash',
+      'gemini-3-flash-preview',
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.6-flash',
+    ])
+  ).filter(Boolean);
 
   try {
     const beforeBase64 = Buffer.from(beforeFile.data).toString('base64');
@@ -398,34 +404,68 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
       },
     };
 
-    const geminiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-      },
-      body: JSON.stringify(geminiPayload),
-      signal: abortController.signal,
-    });
+    let candidateText: string | null = null;
+    let lastErrorStatus: number | null = null;
+    let lastErrorBody = '';
 
-    clearTimeout(timeoutId);
+    for (const currentModel of candidateModels) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent`;
 
-    if (!geminiRes.ok) {
-      const duration = Math.round(performance.now() - startTime);
-      console.log(`[REQ ${requestId}] Outcome: 502 PROVIDER_ERROR Duration: ${duration}ms`);
-      return createErrorResponse(
-        502,
-        'PROVIDER_ERROR',
-        'Extraction provider error. No medication comparison was produced.',
-        requestId
-      );
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const abortController = new AbortController();
+          const timeoutId = setTimeout(() => abortController.abort(), 35000); // 35s per call
+
+          const geminiRes = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey,
+            },
+            body: JSON.stringify(geminiPayload),
+            signal: abortController.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (geminiRes.ok) {
+            const geminiData = (await geminiRes.json()) as GeminiGenerateContentResponse;
+            const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              candidateText = text;
+              break;
+            }
+          }
+
+          lastErrorStatus = geminiRes.status;
+          lastErrorBody = await geminiRes.text().catch(() => '<unreadable>');
+          console.warn(
+            `[REQ ${requestId}] Model ${currentModel} (attempt ${attempt}) returned ${geminiRes.status}: ${lastErrorBody.slice(0, 140)}`
+          );
+
+          // Retry on transient spikes (503 Service Unavailable, 429 Rate Limit, 500 Server Error)
+          if (geminiRes.status === 503 || geminiRes.status === 429 || geminiRes.status === 500) {
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+          } else {
+            break; // Skip to next model candidate for other errors (e.g. 404, 400)
+          }
+        } catch (fetchErr: unknown) {
+          const errMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+          console.warn(`[REQ ${requestId}] Model ${currentModel} (attempt ${attempt}) error: ${errMsg}`);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+
+      if (candidateText) {
+        break;
+      }
     }
-
-    const geminiData = (await geminiRes.json()) as GeminiGenerateContentResponse;
-    const candidateText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!candidateText) {
       const duration = Math.round(performance.now() - startTime);
+      console.error(
+        `[REQ ${requestId}] All candidate models failed. Last status: ${lastErrorStatus}. Body: ${lastErrorBody}`
+      );
       console.log(`[REQ ${requestId}] Outcome: 502 PROVIDER_ERROR Duration: ${duration}ms`);
       return createErrorResponse(
         502,
@@ -483,7 +523,6 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
       headers: SECURITY_HEADERS,
     });
   } catch (err: unknown) {
-    clearTimeout(timeoutId);
     const duration = Math.round(performance.now() - startTime);
 
     if (err instanceof Error && err.name === 'AbortError') {

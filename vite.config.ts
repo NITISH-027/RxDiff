@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), apiExtractPlugin()],
     server: {
       watch: {
-        ignored: ['**/*.mp4', '**/public/**'],
+        ignored: ['**/*.mp4'],
       },
     },
     test: {
