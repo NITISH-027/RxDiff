@@ -22,30 +22,40 @@ export const SourceRail: React.FC<SourceRailProps> = ({
 }) => {
   const displayTitle =
     railType === 'before' ? 'Previous medication list' : 'Discharge medication list';
+  const documentLabel =
+    railType === 'before' ? 'Previous prescription / home' : 'Hospital discharge order';
 
   return (
     <div
-      className="flex flex-col h-full bg-white text-[#1A1D20] border border-[#E5E0D8] rounded-[6px] shadow-card overflow-hidden select-none"
+      className="flex flex-col bg-white text-[#1A1D20] border border-[#E5E0D8] rounded-[8px] shadow-card overflow-hidden select-none transition-all duration-150"
       data-testid={`source-rail-${railType}`}
     >
       {/* Editorial Panel Masthead */}
       <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#E5E0D8] bg-[#FAF8F5] shrink-0">
         <div className="flex items-baseline gap-2">
-          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-[#1A1D20]">
+          <span className="w-2 h-2 rounded-full bg-[#3D5A4C]/60" aria-hidden="true" />
+          <h3 className="font-sans text-[12.5px] font-semibold tracking-wide text-[#1A1D20]">
             <span>{displayTitle}</span>
             <span className="sr-only">{title}</span>
-          </h2>
+          </h3>
           <span className="text-[10px] text-[#75808B] font-mono uppercase tracking-wider">
             [{sourceType}]
           </span>
         </div>
-        <span className="font-mono text-[11px] text-[#75808B] tabular-nums">
-          {mentions.length} {mentions.length === 1 ? 'ITEM' : 'ITEMS'}
+        <span className="font-mono text-[11px] text-[#75808B] tabular-nums bg-white px-2 py-0.5 rounded-[3px] border border-[#E5E0D8]">
+          {mentions.length} {mentions.length === 1 ? 'medication' : 'medications'}
+          <span className="sr-only">{mentions.length === 1 ? 'ITEM' : 'ITEMS'}</span>
         </span>
       </div>
 
-      {/* Rows Container */}
-      <div className="flex-1 overflow-y-auto divide-y divide-[#E5E0D8]/60">
+      {/* Subtitle / Document context */}
+      <div className="px-3.5 py-1.5 bg-[#FAF8F5]/60 border-b border-[#E5E0D8]/60 text-[11px] font-sans text-[#75808B] flex items-center justify-between">
+        <span>{documentLabel}</span>
+        <span className="font-mono text-[10px] text-[#75808B]">Original source lines</span>
+      </div>
+
+      {/* Compact Scrollable Items Container (Comfortable 140px-180px height) */}
+      <div className="max-h-[160px] overflow-y-auto divide-y divide-[#E5E0D8]/60">
         {mentions.map((item) => {
           const isActive = activeMentionId === item.mention.mention_id;
           const isDimmed =
@@ -57,7 +67,7 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               id={`${railType}-${item.mention.mention_id}`}
               data-anchor-id={`${railType}-${item.mention.mention_id}`}
               onClick={() => onSelectMention?.(item.mention.mention_id)}
-              className={`relative px-3.5 py-2.5 transition-all duration-150 cursor-pointer ${
+              className={`relative px-3.5 py-2 transition-all duration-150 cursor-pointer ${
                 isActive
                   ? 'bg-[#FAF8F5] ring-1 ring-[#3D5A4C]/40 z-10'
                   : 'bg-white hover:bg-[#FAF8F5]'
@@ -67,14 +77,14 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               }}
             >
               {/* Row Header: Gutter Marker + Status Pill */}
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="font-mono text-[11px] font-medium text-[#48525B] bg-[#F5F2EB] px-1.5 py-0.5 rounded-[2px] tabular-nums">
+              <div className="flex items-center justify-between gap-2 mb-0.5">
+                <span className="font-mono text-[10.5px] font-medium text-[#48525B] bg-[#F5F2EB] px-1.5 py-0.5 rounded-[2px] tabular-nums">
                   {item.marker}
                 </span>
 
                 {item.mention.status_word !== 'none' && (
                   <span
-                    className={`font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-[2px] uppercase ${
+                    className={`font-mono text-[9.5px] font-semibold px-1.5 py-0.5 rounded-[2px] uppercase ${
                       item.mention.status_word === 'stop' || item.mention.status_word === 'hold'
                         ? 'bg-[#FFE4E6] text-[#9F1239]'
                         : item.mention.status_word === 'start'
@@ -88,12 +98,12 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               </div>
 
               {/* Exact Evidence Line */}
-              <p className="font-mono text-[12px] leading-[18px] text-[#1A1D20] mb-1.5 break-words font-normal">
+              <p className="font-mono text-[11.5px] leading-[17px] text-[#1A1D20] mb-1 break-words font-normal">
                 &ldquo;{item.mention.evidence_quote}&rdquo;
               </p>
 
               {/* Parsed Values as Quiet Annotations */}
-              <div className="flex flex-wrap gap-1.5 pt-0.5 text-[10.5px] font-mono text-[#526071]">
+              <div className="flex flex-wrap gap-1 text-[10px] font-mono text-[#526071]">
                 {item.mention.strength_value !== null && (
                   <span className="bg-[#FAF8F5] px-1.5 py-0.5 rounded-[2px] tabular-nums border border-[#E5E0D8]/70">
                     {item.mention.strength_value} {item.mention.strength_unit ?? ''}

@@ -163,9 +163,9 @@ export function App() {
   }
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-[#FAF8F5] text-[#1A1D20] flex flex-col selection:bg-[#3D5A4C]/20 selection:text-[#1A1D20]">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1D20] flex flex-col selection:bg-[#3D5A4C]/20 selection:text-[#1A1D20]">
       {/* 54px Minimal Editorial Frame Top Bar */}
-      <header className="no-print h-[54px] bg-white border-b border-[#E5E0D8] px-4 sm:px-6 flex items-center justify-between gap-3 select-none shrink-0 z-30 shadow-xs">
+      <header className="no-print sticky top-0 bg-white/95 backdrop-blur-sm border-b border-[#E5E0D8] px-4 sm:px-6 h-[54px] flex items-center justify-between gap-3 select-none z-30 shadow-xs">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-2.5 shrink-0">
           <span className="font-serif text-[17px] font-semibold tracking-tight text-[#1A1D20]">
@@ -230,19 +230,19 @@ export function App() {
         </span>
       </div>
 
-      {/* Main Workspace */}
-      <main className="no-print flex-1 min-h-0 flex flex-col max-w-[1480px] w-full mx-auto px-4 sm:px-6 py-3 space-y-3 overflow-hidden">
+      {/* Main Spacious Centered Workspace */}
+      <main className="no-print flex-1 max-w-[940px] w-full mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
         {/* Editorial Header Entry Area */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 pb-2.5 border-b border-[#E5E0D8] shrink-0">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-3 border-b border-[#E5E0D8] shrink-0">
           <div>
-            <div className="font-mono text-[10px] tracking-[0.14em] text-[#75808B] uppercase mb-0.5">
-              Medication reconciliation · Clinical review
+            <div className="font-mono text-[10.5px] tracking-[0.14em] text-[#75808B] uppercase mb-1">
+              Clinical Medication Reconciliation
             </div>
-            <h1 className="font-serif text-[clamp(22px,2.2vw,30px)] font-normal text-[#1A1D20] tracking-tight leading-tight">
+            <h1 className="font-serif text-[clamp(24px,2.6vw,34px)] font-normal text-[#1A1D20] tracking-tight leading-tight">
               Compare <em className="italic font-normal">previous</em> and <em className="italic font-normal">discharge</em> regimens
             </h1>
-            <p className="font-sans text-[12.5px] text-[#48525B] mt-0.5">
-              Deterministic verification between previous prescription and discharge lists.
+            <p className="font-sans text-[13.5px] text-[#48525B] mt-1 max-w-[620px] leading-[20px]">
+              A transparent, deterministic verification between previous prescriptions and hospital discharge orders.
             </p>
           </div>
 
@@ -250,7 +250,7 @@ export function App() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 shrink-0">
             {/* Mode Control: Calm physical pill switch */}
             <div
-              className="flex items-center gap-1 bg-[#EDE8DF] p-0.5 rounded-[5px] border border-[#E5E0D8] shrink-0"
+              className="flex items-center gap-1 bg-[#EDE8DF] p-0.5 rounded-[6px] border border-[#E5E0D8] shrink-0"
               role="tablist"
               aria-label="Workflow Mode"
             >
@@ -285,7 +285,7 @@ export function App() {
             {/* Demo Cases Editorial Index (Only shown in demo mode) */}
             {mode === 'demos' && (
               <div
-                className="flex items-center gap-1 overflow-x-auto p-0.5 bg-[#EDE8DF] rounded-[5px] border border-[#E5E0D8] shrink-0"
+                className="flex items-center gap-1 overflow-x-auto p-0.5 bg-[#EDE8DF] rounded-[6px] border border-[#E5E0D8] shrink-0"
                 role="tablist"
                 aria-label="Bundled Demo Cases"
               >
@@ -303,7 +303,7 @@ export function App() {
                       role="tab"
                       aria-selected={isSelected}
                       aria-label={`${c.index} ${c.title} (${c.fullLabel})`}
-                      className={`relative min-h-[30px] px-2.5 py-1 text-[11px] font-mono rounded-[3px] transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`relative min-h-[30px] px-2.5 py-1 text-[11px] font-mono rounded-[4px] transition-all whitespace-nowrap flex items-center gap-1.5 ${
                         isSelected
                           ? 'text-[#1A1D20] font-semibold bg-white shadow-xs'
                           : 'text-[#75808B] hover:text-[#1A1D20]'
@@ -329,7 +329,7 @@ export function App() {
         {mode === 'demos' ? (
           <>
             {/* Stepper Strip */}
-            <div className="relative h-[34px] bg-white rounded-[5px] border border-[#E5E0D8] px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0 shadow-xs">
+            <div className="relative h-[36px] bg-white rounded-[6px] border border-[#E5E0D8] px-3.5 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0 shadow-xs">
               {isAnalyzing && (
                 <div
                   className="absolute inset-y-0 w-[1px] bg-[#3D5A4C] animate-scan-line pointer-events-none"

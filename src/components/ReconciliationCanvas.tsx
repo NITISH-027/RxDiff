@@ -69,11 +69,12 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
 
   return (
     <div
-      className="w-full flex flex-col flex-1 min-h-0 h-full overflow-hidden"
+      ref={containerRef}
+      className="w-full flex flex-col space-y-6 select-none"
       data-testid="reconciliation-canvas"
     >
-      {/* Mobile Segmented Control (Tabs) */}
-      <div className="lg:hidden flex items-center justify-between p-1 mb-2 bg-[#EDE8DF] border border-[#E5E0D8] rounded-[5px] shrink-0">
+      {/* Mobile Segmented Navigation Tabs */}
+      <div className="lg:hidden flex items-center justify-between p-1 bg-[#EDE8DF] border border-[#E5E0D8] rounded-[6px] shrink-0">
         {(['before', 'changes', 'after'] as const).map((tab) => {
           const isSelected = mobileTab === tab;
           const label =
@@ -87,7 +88,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
-              className={`flex-1 min-h-[40px] py-1.5 px-1 text-center font-mono text-[11px] font-medium uppercase rounded-[3px] transition-colors ${
+              className={`flex-1 min-h-[40px] py-1.5 px-1 text-center font-mono text-[11px] font-medium uppercase rounded-[4px] transition-colors ${
                 isSelected
                   ? 'bg-white text-[#1A1D20] font-semibold shadow-xs'
                   : 'text-[#75808B] hover:text-[#1A1D20]'
@@ -101,23 +102,27 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
         })}
       </div>
 
-      {/* 3-Column Layout (31% / 38% / 31%) */}
-      <div
-        ref={containerRef}
-        className="relative w-full flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch h-full overflow-hidden"
-      >
-        {/* SVG Signature Connector Overlay */}
-        <ConnectorLayer
-          containerRef={containerRef}
-          diffItems={model.diffItems}
-          activeDiffId={activeDiffId}
-          inspectorOpen={pinnedDiffId !== null}
-        />
+      {/* SVG Connector Layer */}
+      <ConnectorLayer
+        containerRef={containerRef}
+        diffItems={model.diffItems}
+        activeDiffId={activeDiffId}
+        inspectorOpen={pinnedDiffId !== null}
+      />
 
-        {/* COLUMN 1: BEFORE Source Rail (31%) */}
+      {/* 1. COMPACT SOURCE DOCUMENT SUMMARIES (Progressive Disclosure Bar) */}
+      <section
+        aria-label="Source Document Summaries"
+        className={`grid grid-cols-1 md:grid-cols-2 gap-4 items-start ${
+          mobileTab === 'changes'
+            ? 'flex flex-col md:grid'
+            : 'flex flex-col md:grid'
+        }`}
+      >
+        {/* BEFORE Source Summary Panel */}
         <div
-          className={`w-full lg:w-[31%] h-full flex flex-col overflow-hidden ${
-            mobileTab === 'before' ? 'flex flex-1' : 'hidden lg:flex'
+          className={`w-full ${
+            mobileTab === 'after' ? 'hidden md:block' : 'block'
           }`}
         >
           <SourceRail
@@ -131,24 +136,10 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
           />
         </div>
 
-        {/* COLUMN 2: Central Review Spine (38%) */}
+        {/* AFTER Source Summary Panel OR In-Place Evidence Inspector when difference pinned */}
         <div
-          className={`w-full lg:w-[38%] h-full flex flex-col z-20 overflow-hidden ${
-            mobileTab === 'changes' ? 'flex flex-1' : 'hidden lg:flex'
-          }`}
-        >
-          <ReviewSpine
-            diffItems={model.diffItems}
-            activeDiffId={activeDiffId}
-            onHoverDiff={setHoveredDiffId}
-            onSelectDiff={handleSelectDiff}
-          />
-        </div>
-
-        {/* COLUMN 3: AFTER Source Rail (31%) OR Desktop In-Place Evidence Inspector */}
-        <div
-          className={`w-full lg:w-[31%] h-full flex flex-col z-20 overflow-hidden ${
-            mobileTab === 'after' ? 'flex flex-1' : 'hidden lg:flex'
+          className={`w-full ${
+            mobileTab === 'before' ? 'hidden md:block' : 'block'
           }`}
         >
           {pinnedDiffId && activeDiffItem ? (
@@ -165,7 +156,22 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             />
           )}
         </div>
-      </div>
+      </section>
+
+      {/* 2. PRIMARY FOCUS HERO: SPACIOUS CENTERED MEDICATION REVIEW */}
+      <section
+        aria-label="Medication Differences Review"
+        className={`w-full ${
+          mobileTab !== 'changes' ? 'hidden lg:block' : 'block'
+        }`}
+      >
+        <ReviewSpine
+          diffItems={model.diffItems}
+          activeDiffId={activeDiffId}
+          onHoverDiff={setHoveredDiffId}
+          onSelectDiff={handleSelectDiff}
+        />
+      </section>
 
       {/* MOBILE BOTTOM SHEET FOR EVIDENCE INSPECTOR */}
       {pinnedDiffId && activeDiffItem && (
@@ -178,12 +184,12 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             data-testid="mobile-sheet-scrim"
           />
 
-          {/* Fixed Bottom Sheet Drawer: max-height 78dvh, safe-area padding */}
+          {/* Fixed Bottom Sheet Drawer */}
           <div
             role="dialog"
             aria-modal="true"
             aria-label="Evidence Inspector Sheet"
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[78dvh] flex flex-col bg-white border-t border-[#E5E0D8] shadow-2xl rounded-t-[8px] pb-[env(safe-area-inset-bottom,16px)] overflow-hidden animate-card-enter"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[82dvh] flex flex-col bg-white border-t border-[#E5E0D8] shadow-2xl rounded-t-[12px] pb-[env(safe-area-inset-bottom,16px)] overflow-hidden animate-card-enter"
             data-testid="mobile-evidence-sheet"
           >
             <EvidenceInspector
