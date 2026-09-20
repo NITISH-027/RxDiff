@@ -128,4 +128,28 @@ describe('Stage 5 Scroll Story Intro', () => {
       screen.getAllByText(/Confirm every difference with a doctor or pharmacist\./i).length
     ).toBeGreaterThanOrEqual(1);
   });
+
+  it('renders journey hero headline, support copy, and emergent difference elements', () => {
+    render(<StoryIntro />);
+
+    // Hero headline and support
+    expect(screen.getByText(/The important changes can hide between two lists\./i)).toBeInTheDocument();
+    expect(screen.getByText(/RxDiff reveals what changed and links every flag back to its source\./i)).toBeInTheDocument();
+
+    // Case A Metformin difference data
+    expect(screen.getAllByText(/Metformin/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/CHANGED/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Frequency: 1× daily → 2× daily/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('provides keyboard skip link navigating to #workspace', () => {
+    const { container } = render(<App />);
+
+    const skipLink = container.querySelector('a[href="#workspace"]');
+    expect(skipLink).toBeInTheDocument();
+    expect(skipLink).toHaveTextContent(/Skip to medication comparison/i);
+
+    const workspaceEl = container.querySelector('#workspace');
+    expect(workspaceEl).toBeInTheDocument();
+  });
 });

@@ -165,10 +165,18 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1A1D20] flex flex-col selection:bg-[#3D5A4C]/20 selection:text-[#1A1D20]">
-      {/* STAGE 5: Visual Narrative Scroll Story Intro */}
+      {/* Keyboard-focusable Skip Link to #workspace */}
+      <a
+        href="#workspace"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#2E6B56] focus:text-white focus:rounded focus:outline-none focus:ring-2 focus:ring-white text-xs font-mono shadow-md"
+      >
+        Skip to medication comparison
+      </a>
+
+      {/* STAGE 5: Visual Narrative Scroll Story Journey */}
       <StoryIntro />
 
-      {/* Main Reconciliation Tool */}
+      {/* Main Reconciliation Tool (#app and #workspace) */}
       <div id="app" className="min-h-screen flex flex-col">
         {/* 54px Minimal Editorial Frame Top Bar */}
         <header className="no-print sticky top-0 bg-white/95 backdrop-blur-sm border-b border-[#E5E0D8] px-4 sm:px-6 h-[54px] flex items-center justify-between gap-3 select-none z-30 shadow-xs">
@@ -237,7 +245,7 @@ export function App() {
       </div>
 
       {/* Main Spacious Centered Workspace */}
-      <main className="no-print flex-1 max-w-[940px] w-full mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
+      <main id="workspace" className="no-print flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
         {/* Editorial Header Entry Area */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-3 border-b border-[#E5E0D8] shrink-0">
           <div>
@@ -245,10 +253,10 @@ export function App() {
               Clinical Medication Reconciliation
             </div>
             <h1 className="font-serif text-[clamp(24px,2.6vw,34px)] font-normal text-[#1A1D20] tracking-tight leading-tight">
-              Compare <em className="italic font-normal">previous</em> and <em className="italic font-normal">discharge</em> regimens
+              The important changes can hide between two lists.
             </h1>
-            <p className="font-sans text-[13.5px] text-[#48525B] mt-1 max-w-[620px] leading-[20px]">
-              A transparent, deterministic verification between previous prescriptions and hospital discharge orders.
+            <p className="font-sans text-[13.5px] text-[#48525B] mt-1 max-w-[680px] leading-[20px]">
+              RxDiff reveals what changed and links every flag back to its source. See what changed. Know what to ask.
             </p>
           </div>
 
@@ -449,6 +457,7 @@ export function App() {
                     disabled={isUploading}
                     ariaLabel="01 BEFORE IMAGE"
                     srLabel="01 BEFORE IMAGE"
+                    placeholder="Place previous list"
                   />
 
                   {/* Relationship mark */}
@@ -468,6 +477,7 @@ export function App() {
                     disabled={isUploading}
                     ariaLabel="02 AFTER IMAGE"
                     srLabel="02 AFTER IMAGE"
+                    placeholder="Place discharge list"
                   />
                 </div>
 

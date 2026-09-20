@@ -110,19 +110,13 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
         inspectorOpen={pinnedDiffId !== null}
       />
 
-      {/* 1. COMPACT SOURCE DOCUMENT SUMMARIES (Progressive Disclosure Bar) */}
-      <section
-        aria-label="Source Document Summaries"
-        className={`grid grid-cols-1 md:grid-cols-2 gap-4 items-start ${
-          mobileTab === 'changes'
-            ? 'flex flex-col md:grid'
-            : 'flex flex-col md:grid'
-        }`}
-      >
-        {/* BEFORE Source Summary Panel */}
-        <div
-          className={`w-full ${
-            mobileTab === 'after' ? 'hidden md:block' : 'block'
+      {/* Full-Width 3-Column Editorial Layout matching the Journey Geometry */}
+      <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* 1. LEFT COLUMN: Previous Prescription Source Rail */}
+        <section
+          aria-label="Previous Prescriptions"
+          className={`lg:col-span-3 ${
+            mobileTab !== 'before' ? 'hidden lg:block' : 'block'
           }`}
         >
           <SourceRail
@@ -134,12 +128,28 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             onSelectMention={(id) => handleSelectSourceMention(id, 'before')}
             railType="before"
           />
-        </div>
+        </section>
 
-        {/* AFTER Source Summary Panel OR In-Place Evidence Inspector when difference pinned */}
-        <div
-          className={`w-full ${
-            mobileTab === 'before' ? 'hidden md:block' : 'block'
+        {/* 2. CENTER COLUMN: Primary Medication Review Spine */}
+        <section
+          aria-label="Medication Differences Review"
+          className={`lg:col-span-6 ${
+            mobileTab !== 'changes' ? 'hidden lg:block' : 'block'
+          }`}
+        >
+          <ReviewSpine
+            diffItems={model.diffItems}
+            activeDiffId={activeDiffId}
+            onHoverDiff={setHoveredDiffId}
+            onSelectDiff={handleSelectDiff}
+          />
+        </section>
+
+        {/* 3. RIGHT COLUMN: Discharge Regimen OR Inline Evidence Inspector Extension */}
+        <section
+          aria-label="Discharge Orders"
+          className={`lg:col-span-3 ${
+            mobileTab !== 'after' ? 'hidden lg:block' : 'block'
           }`}
         >
           {pinnedDiffId && activeDiffItem ? (
@@ -155,23 +165,8 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
               railType="after"
             />
           )}
-        </div>
-      </section>
-
-      {/* 2. PRIMARY FOCUS HERO: SPACIOUS CENTERED MEDICATION REVIEW */}
-      <section
-        aria-label="Medication Differences Review"
-        className={`w-full ${
-          mobileTab !== 'changes' ? 'hidden lg:block' : 'block'
-        }`}
-      >
-        <ReviewSpine
-          diffItems={model.diffItems}
-          activeDiffId={activeDiffId}
-          onHoverDiff={setHoveredDiffId}
-          onSelectDiff={handleSelectDiff}
-        />
-      </section>
+        </section>
+      </div>
 
       {/* MOBILE BOTTOM SHEET FOR EVIDENCE INSPECTOR */}
       {pinnedDiffId && activeDiffItem && (
