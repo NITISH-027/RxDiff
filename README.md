@@ -1,6 +1,9 @@
 # 🩺 RxDiff · Deterministic Clinical Medication Reconciliation 💊
 
 <p align="center">
+  <a href="https://drive.google.com/file/d/1Vn3KboK0jClShztNo4HdSVCNFss7YVbS/view?usp=sharing" target="_blank">
+    <img src="https://img.shields.io/badge/▶_Live_Demo_Video-Watch_on_Google_Drive-E53E3E?style=for-the-badge&logo=google-drive&logoColor=white" alt="Live Demo Video" />
+  </a>
   <img src="https://img.shields.io/badge/Status-Clinical%20Ready-2E6B56?style=for-the-badge&logo=shield&logoColor=white" alt="Clinical Ready" />
   <img src="https://img.shields.io/badge/Architecture-Deterministic%20Zero--Hallucination-1A1D20?style=for-the-badge&logo=codeforces&logoColor=white" alt="Deterministic Zero-Hallucination" />
   <img src="https://img.shields.io/badge/Vision%20Engine-Gemini%20Multimodal-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini Multimodal" />
@@ -11,6 +14,13 @@
 
 ---
 
+> ### 🎥 **LIVE DEMO VIDEO WALKTHROUGH**
+> 
+> 🔗 **Direct Video Link:** [**Watch RxDiff Live Demo on Google Drive**](https://drive.google.com/file/d/1Vn3KboK0jClShztNo4HdSVCNFss7YVbS/view?usp=sharing)  
+> *Full end-to-end clinical workflow demonstration: prescription document ingestion, Gemini multimodal extraction, deterministic diff engine reconciliation, safety guardrails, tri-column verification canvas, and EHR handoff note export.*
+
+---
+
 ## 📖 Executive Summary
 
 > ⚠️ **CLINICAL MANDATE:** *Hospital transitions (admission to discharge) account for over **50% of all hospital medication errors**. Unintentional omissions, unrecognized brand-generic therapeutic duplications, and subtle dose frequency titrations frequently escape manual review.*
@@ -18,6 +28,8 @@
 **RxDiff** is an enterprise clinical decision-support workbench built on a **two-tier air-gapped architecture**:
 1. 👁️ **Multimodal Vision Extractor (Gemini)**: Acts exclusively as a high-fidelity OCR and structured entity reader. It never reasons, validates, diagnoses, or classifies medication changes.
 2. ⚙️ **Pure Deterministic Diff Engine**: A 100% mathematical, rule-bound reconciliation engine that computes discrepancies, detects omissions, prevents therapeutic duplications, and anchors every clinical flag directly to verbatim image evidence.
+
+📺 **Live Demo Video**: [Watch the full demonstration on Google Drive](https://drive.google.com/file/d/1Vn3KboK0jClShztNo4HdSVCNFss7YVbS/view?usp=sharing)
 
 ---
 

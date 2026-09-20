@@ -2,6 +2,7 @@
   "name": "rxdiff",
   "private": true,
   "version": "0.0.0",
+  "description": "RxDiff - Deterministic Clinical Medication Reconciliation Workbench. Live Demo Video: https://drive.google.com/file/d/1Vn3KboK0jClShztNo4HdSVCNFss7YVbS/view?usp=sharing",
   "type": "module",
   "scripts": {
     "dev": "vite",
