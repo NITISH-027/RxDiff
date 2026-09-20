@@ -110,7 +110,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
     }
   }, [onInspectEvidence]);
 
-  // Helper to draw image onto canvas with cover aspect ratio & DPR capped at 1.5
+  // Helper to draw image onto canvas with cover aspect ratio, capped scale, DPR capped at 1.5, and high quality smoothing
   const drawFrameCover = useCallback((canvas: HTMLCanvasElement, img: HTMLImageElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -128,29 +128,23 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
       canvas.height = targetHeight;
     }
 
+    // High quality bicubic scaling
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     const imgW = img.naturalWidth || img.width;
     const imgH = img.naturalHeight || img.height;
     if (!imgW || !imgH) return;
 
-    const canvasAspect = targetWidth / targetHeight;
-    const imgAspect = imgW / imgH;
+    // Capped cover scale (max 1.05x zoom over fit to prevent pixelation on tall/wide screens)
+    const fitScale = Math.min(targetWidth / imgW, targetHeight / imgH);
+    const coverScale = Math.max(targetWidth / imgW, targetHeight / imgH);
+    const effectiveScale = Math.min(coverScale, fitScale * 1.05);
 
-    let rW: number;
-    let rH: number;
-    let oX: number;
-    let oY: number;
-
-    if (canvasAspect > imgAspect) {
-      rW = targetWidth;
-      rH = targetWidth / imgAspect;
-      oX = 0;
-      oY = (targetHeight - rH) / 2;
-    } else {
-      rH = targetHeight;
-      rW = targetHeight * imgAspect;
-      oX = (targetWidth - rW) / 2;
-      oY = 0;
-    }
+    const rW = Math.round(imgW * effectiveScale);
+    const rH = Math.round(imgH * effectiveScale);
+    const oX = Math.round((targetWidth - rW) / 2);
+    const oY = Math.round((targetHeight - rH) / 2);
 
     ctx.clearRect(0, 0, targetWidth, targetHeight);
     ctx.drawImage(img, oX, oY, rW, rH);
@@ -613,8 +607,23 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               style={{ opacity: 0 }}
             />
 
-            {/* Dark Vignette Overlay */}
-            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            {/* Cinematic Radial Vignette to focus the eye and soften edge artifacts */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 50% 50%, rgba(10, 13, 15, 0.15) 0%, rgba(10, 13, 15, 0.55) 65%, rgba(10, 13, 15, 0.92) 100%)',
+              }}
+            />
+
+            {/* Static Cinematic Film Grain to break up JPEG banding and add filmic texture */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.035]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'repeat',
+              }}
+            />
           </div>
 
           {/* STAGE A (0-20%): Hero Headline & Support */}
