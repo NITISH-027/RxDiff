@@ -6,6 +6,7 @@ import { ReconciliationCanvas } from './components/ReconciliationCanvas.js';
 import { PrintHandoff } from './components/PrintHandoff.js';
 import { WarningIcon, PrinterIcon } from './components/Icons.js';
 import { ImageUploadDropzone } from './components/ImageUploadDropzone.js';
+import { EditorialHero } from './components/EditorialHero.js';
 import { liveGeminiProvider } from './services/extraction/liveGeminiProvider.js';
 import type { ExtractionStage, LiveExtractionSuccess } from './services/extraction/types.js';
 
@@ -13,6 +14,15 @@ type WorkbenchMode = 'demos' | 'upload';
 type CaseKey = 'case-a' | 'case-b' | 'case-c';
 
 export function App() {
+  const [showHero, setShowHero] = useState<boolean>(() => {
+    if (import.meta.env.MODE === 'test') {
+      return false;
+    }
+    if (typeof window !== 'undefined' && window.location.search.includes('workspace=true')) {
+      return false;
+    }
+    return true;
+  });
   const [mode, setMode] = useState<WorkbenchMode>('demos');
   const [selectedCase, setSelectedCase] = useState<CaseKey>('case-a');
   const [analyzingStep, setAnalyzingStep] = useState<number>(3); // 0: READ, 1: STRUCTURE, 2: MATCH, 3: REVIEWED
@@ -141,6 +151,25 @@ export function App() {
     setUploadError(null);
   };
 
+  if (showHero) {
+    return (
+      <EditorialHero
+        onEnterWorkspace={() => {
+          setShowHero(false);
+          setMode('demos');
+        }}
+        onGenerateDiff={() => {
+          setShowHero(false);
+          setMode('upload');
+        }}
+        beforeFile={beforeFile}
+        afterFile={afterFile}
+        onSelectBeforeFile={(f) => setBeforeFile(f)}
+        onSelectAfterFile={(f) => setAfterFile(f)}
+      />
+    );
+  }
+
   return (
     <div className="h-screen max-h-screen overflow-hidden bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white radial-light-pool bg-grain">
       {/* 56px Quiet Frame Top Bar */}
@@ -167,8 +196,16 @@ export function App() {
           </p>
         </div>
 
-        {/* Right: Synthetic / Live Badge & Print Handoff Button */}
+        {/* Right: Exhibition Cover, Synthetic / Live Badge & Print Handoff Button */}
         <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => setShowHero(true)}
+            className="min-h-[32px] px-2.5 py-1 text-[11px] font-sans font-medium text-text-2 hover:text-white bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[4px] transition-colors flex items-center gap-1"
+            title="Return to artistic editorial exhibition"
+          >
+            <span>Exhibition</span>
+          </button>
+
           {mode === 'upload' && liveResult ? (
             <span className="font-mono text-[10px] px-2 py-0.5 rounded-[3px] bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30 uppercase font-bold hidden sm:inline">
               LIVE EXTRACTION / REVIEW REQUIRED
