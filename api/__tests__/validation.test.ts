@@ -96,6 +96,15 @@ describe('Server Validation Pipeline (api/validation.ts)', () => {
       expect(res.valid).toBe(true);
     });
 
+    it('passes when raw text is table formatted with pipes and evidence quote is natural text', () => {
+      const res = verifyVerbatimEvidence({
+        raw_text: 'Amlodipine | 5 mg | Take 1 tablet by mouth once daily',
+        raw_name: 'Amlodipine',
+        evidence_quote: 'Amlodipine 5 mg, Take 1 tablet by mouth once daily',
+      });
+      expect(res.valid).toBe(true);
+    });
+
     it('fails closed when evidence quote is empty', () => {
       const res = verifyVerbatimEvidence({
         raw_text: 'Metformin 500 mg',

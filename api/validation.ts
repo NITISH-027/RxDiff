@@ -101,10 +101,18 @@ export function normalizeWhitespace(str: string): string {
   return str.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+export function normalizeStructuralTokens(str: string): string {
+  return str
+    .replace(/[|\-,;:()[\]/]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 /**
  * Audit verbatim evidence:
  * 1. Evidence quote must be non-empty
- * 2. Evidence quote must match raw_text after whitespace normalization
+ * 2. Evidence quote must match raw_text after whitespace or structural token normalization
  * 3. raw_name must occur in raw_text
  */
 export function verifyVerbatimEvidence(mention: RawModelMention): {
@@ -118,7 +126,16 @@ export function verifyVerbatimEvidence(mention: RawModelMention): {
   const normQuote = normalizeWhitespace(mention.evidence_quote);
   const normRaw = normalizeWhitespace(mention.raw_text);
 
-  if (!normRaw.includes(normQuote) && !normQuote.includes(normRaw)) {
+  const structQuote = normalizeStructuralTokens(mention.evidence_quote);
+  const structRaw = normalizeStructuralTokens(mention.raw_text);
+
+  const quoteMatches =
+    normRaw.includes(normQuote) ||
+    normQuote.includes(normRaw) ||
+    structRaw.includes(structQuote) ||
+    structQuote.includes(structRaw);
+
+  if (!quoteMatches) {
     return {
       valid: false,
       reason: `Evidence quote "${mention.evidence_quote}" does not match raw text "${mention.raw_text}"`,
@@ -127,7 +144,15 @@ export function verifyVerbatimEvidence(mention: RawModelMention): {
 
   if (mention.raw_name && mention.raw_name.trim()) {
     const normName = normalizeWhitespace(mention.raw_name);
-    if (!normRaw.includes(normName)) {
+    const structName = normalizeStructuralTokens(mention.raw_name);
+
+    const nameMatches =
+      normRaw.includes(normName) ||
+      normQuote.includes(normName) ||
+      structRaw.includes(structName) ||
+      structQuote.includes(structName);
+
+    if (!nameMatches) {
       return {
         valid: false,
         reason: `Raw medication name "${mention.raw_name}" does not occur in raw text "${mention.raw_text}"`,

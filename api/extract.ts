@@ -475,12 +475,13 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
       );
     }
 
-    // 7. Parse & Zod Validate raw model response
     let parsedRaw: unknown;
     try {
       parsedRaw = JSON.parse(candidateText);
-    } catch {
+    } catch (parseErr) {
       const duration = Math.round(performance.now() - startTime);
+      console.error(`[REQ ${requestId}] JSON Parse Error:`, parseErr);
+      console.error(`[REQ ${requestId}] Candidate text was:`, candidateText);
       console.log(`[REQ ${requestId}] Outcome: 422 INVALID_EXTRACTION Duration: ${duration}ms`);
       return createErrorResponse(
         422,
@@ -493,6 +494,11 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
     const validatedRaw = RawGeminiResponseSchema.safeParse(parsedRaw);
     if (!validatedRaw.success) {
       const duration = Math.round(performance.now() - startTime);
+      console.error(
+        `[REQ ${requestId}] RawGeminiResponseSchema Zod Issues:`,
+        JSON.stringify(validatedRaw.error.issues, null, 2)
+      );
+      console.error(`[REQ ${requestId}] Parsed raw was:`, JSON.stringify(parsedRaw, null, 2));
       console.log(`[REQ ${requestId}] Outcome: 422 INVALID_EXTRACTION Duration: ${duration}ms`);
       return createErrorResponse(
         422,
@@ -503,7 +509,14 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
     }
 
     // 8. Run strict clinical evidence & normalization validation pipeline
-    const { before, after, warnings } = buildValidatedSourceDocuments(validatedRaw.data);
+    let validatedDocs;
+    try {
+      validatedDocs = buildValidatedSourceDocuments(validatedRaw.data);
+    } catch (pipelineErr) {
+      console.error(`[REQ ${requestId}] buildValidatedSourceDocuments exception:`, pipelineErr);
+      throw pipelineErr;
+    }
+    const { before, after, warnings } = validatedDocs;
 
     const duration = Math.round(performance.now() - startTime);
     console.log(`[REQ ${requestId}] Outcome: 200 Success Duration: ${duration}ms`);
