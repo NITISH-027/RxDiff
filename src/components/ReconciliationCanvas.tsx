@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { PresentationModel } from '../adapters/presentationAdapter.js';
 import { SourceRail } from './SourceRail.js';
 import { ReviewSpine } from './ReviewSpine.js';
 import { EvidenceInspector } from './EvidenceInspector.js';
 import { ConnectorLayer } from './ConnectorLayer.js';
+import { hapticAudio } from '../utils/audioHaptics.js';
 
 interface ReconciliationCanvasProps {
   model: PresentationModel;
@@ -42,11 +43,6 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
     });
   }
 
-  const handleSelectDiff = (diffId: string) => {
-    triggerRef.current = document.activeElement as HTMLElement | null;
-    setPinnedDiffId((prev) => (prev === diffId ? null : diffId));
-  };
-
   const handleCloseInspector = () => {
     setPinnedDiffId(null);
     // Return focus to the triggering card
@@ -54,6 +50,50 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
       triggerRef.current?.focus();
     }, 50);
   };
+
+  const handleSelectDiff = (diffId: string) => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    hapticAudio.playTactileClick();
+    setPinnedDiffId((prev) => (prev === diffId ? null : diffId));
+  };
+
+  // Keyboard navigation for clinicians (J/K, Arrows, Esc)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const diffs = model.diffItems;
+      if (!diffs.length) return;
+
+      const currentIndex = diffs.findIndex((d) => d.diff.diff_id === activeDiffId);
+
+      if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = currentIndex < diffs.length - 1 ? currentIndex + 1 : 0;
+        setPinnedDiffId(diffs[nextIndex].diff.diff_id);
+        hapticAudio.playTactileClick();
+      } else if (e.key === 'k' || e.key === 'K' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : diffs.length - 1;
+        setPinnedDiffId(diffs[prevIndex].diff.diff_id);
+        hapticAudio.playTactileClick();
+      } else if (e.key === 'Escape' && pinnedDiffId) {
+        e.preventDefault();
+        handleCloseInspector();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeDiffId, pinnedDiffId, model.diffItems]);
 
   const handleSelectSourceMention = (mentionId: string, type: 'before' | 'after') => {
     triggerRef.current = document.activeElement as HTMLElement | null;
@@ -63,6 +103,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
         : d.diff.after_mention_id === mentionId
     );
     if (matchingDiff) {
+      hapticAudio.playTactileClick();
       setPinnedDiffId(matchingDiff.diff.diff_id);
     }
   };

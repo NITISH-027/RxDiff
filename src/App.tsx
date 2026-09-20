@@ -10,9 +10,27 @@ import { EditorialHero } from './components/EditorialHero.js';
 import { StoryIntro } from './components/StoryIntro.js';
 import { liveGeminiProvider } from './services/extraction/liveGeminiProvider.js';
 import type { ExtractionStage, LiveExtractionSuccess } from './services/extraction/types.js';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal.js';
+import { hapticAudio } from './utils/audioHaptics.js';
+import { formatClinicalSummaryText } from './utils/exportSummary.js';
 
 type WorkbenchMode = 'demos' | 'upload';
 type CaseKey = 'case-a' | 'case-b' | 'case-c';
+
+const CASE_BACKSTORIES: Record<CaseKey, { department: string; summary: string }> = {
+  'case-a': {
+    department: 'Cardiology Post-MI',
+    summary: 'Post-MI statin intensification (Atorvastatin 10mg → Rosuvastatin 10mg) and Metformin titration.',
+  },
+  'case-b': {
+    department: 'Endocrinology Omission',
+    summary: 'Calcium carbonate absent from discharge order. Triggered safety rule: omission from list is never marked stopped without explicit order.',
+  },
+  'case-c': {
+    department: 'Internal Medicine Duplicate Check',
+    summary: 'Brand-generic equivalence (Glucophage ↔ Metformin) recognized via alias registry; catches inadvertent dual-therapy prescribing.',
+  },
+};
 
 export function App() {
   const [showHero, setShowHero] = useState<boolean>(false);
@@ -20,6 +38,9 @@ export function App() {
   const [selectedCase, setSelectedCase] = useState<CaseKey>('case-a');
   const [analyzingStep, setAnalyzingStep] = useState<number>(3); // 0: READ, 1: STRUCTURE, 2: MATCH, 3: REVIEWED
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(true);
+  const [copiedToast, setCopiedToast] = useState<boolean>(false);
 
   // Upload Workbench State
   const [beforeFile, setBeforeFile] = useState<File | null>(null);
@@ -100,6 +121,43 @@ export function App() {
   const handlePrint = () => {
     window.print();
   };
+
+  const handleCopySummary = async () => {
+    const text = formatClinicalSummaryText(activePresentationModel);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedToast(true);
+      hapticAudio.playSubtleChime();
+      setTimeout(() => setCopiedToast(false), 2500);
+    } catch {
+      // Fallback if clipboard API is restricted
+    }
+  };
+
+  // Clinician Global Keyboard Shortcuts (?, P)
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+      } else if ((e.key === 'p' || e.key === 'P') && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
 
   // Trigger live extraction
   const handleStartExtraction = async () => {
@@ -202,17 +260,76 @@ export function App() {
           </p>
         </div>
 
-        {/* Right: Mode Badge & Print Handoff Button */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        {/* Right: Controls, Audio Toggle, Shortcuts, Copy, Mode Badge & Print */}
+        <div className="flex items-center gap-2 shrink-0">
           {mode === 'upload' && liveResult ? (
             <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#E8EFEA] text-[#2E6B56] border border-[#2E6B56]/20 font-medium hidden sm:inline">
               LIVE EXTRACTION / REVIEW REQUIRED
             </span>
           ) : (
-            <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#F5F2EB] text-[#75808B] border border-[#E5E0D8] hidden sm:inline">
-              SYNTHETIC DEMO — NO PATIENT DATA
+            <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#F5F2EB] text-[#75808B] border border-[#E5E0D8] hidden xl:inline">
+              SYNTHETIC DEMO
             </span>
           )}
+
+          {/* Micro-Haptic Audio Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const muted = hapticAudio.toggleMute();
+              setIsAudioMuted(muted);
+            }}
+            className={`min-h-[32px] px-2 py-1 text-[11px] font-mono border rounded-[4px] shadow-xs transition-colors flex items-center gap-1.5 ${
+              isAudioMuted
+                ? 'bg-white hover:bg-[#F5F2EB] text-[#75808B] border-[#E5E0D8]'
+                : 'bg-[#E8EFEA] text-[#2E6B56] border-[#2E6B56]/30 font-medium'
+            }`}
+            title={isAudioMuted ? 'Turn on tactile audio clicks' : 'Mute tactile audio clicks'}
+            aria-label={isAudioMuted ? 'Turn on tactile audio clicks' : 'Mute tactile audio clicks'}
+          >
+            {isAudioMuted ? (
+              <svg className="w-3.5 h-3.5 text-[#75808B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 text-[#2E6B56]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            )}
+            <span className="hidden md:inline">{isAudioMuted ? 'Muted' : 'Audio ON'}</span>
+          </button>
+
+          {/* Keyboard Shortcuts Button */}
+          <button
+            type="button"
+            onClick={() => setIsShortcutsOpen(true)}
+            className="min-h-[32px] px-2 py-1 text-[11px] font-mono text-[#48525B] bg-white hover:bg-[#F5F2EB] border border-[#E5E0D8] rounded-[4px] shadow-xs transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#3D5A4C]"
+            title="Clinician keyboard shortcuts (?)"
+            aria-label="Clinician keyboard shortcuts"
+          >
+            <kbd className="text-[10px] font-mono bg-[#FAF8F5] px-1 py-0.5 rounded text-[#1A1D20] border border-[#E5E0D8]">?</kbd>
+            <span className="hidden sm:inline">Shortcuts</span>
+          </button>
+
+          {/* Copy EHR Summary */}
+          <button
+            type="button"
+            onClick={handleCopySummary}
+            className="min-h-[32px] px-2.5 py-1 text-[11.5px] font-sans font-medium text-[#1A1D20] bg-white hover:bg-[#F5F2EB] active:translate-y-[1px] border border-[#E5E0D8] rounded-[4px] shadow-xs transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#3D5A4C]"
+            title="Copy formatted clinical handoff summary to clipboard"
+          >
+            {copiedToast ? (
+              <span className="text-[#2E6B56] font-semibold text-[11px]">✓ Copied</span>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5 text-[#75808B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span className="hidden lg:inline">Copy note</span>
+              </>
+            )}
+          </button>
 
           <button
             onClick={handlePrint}
@@ -338,6 +455,18 @@ export function App() {
             )}
           </div>
         </div>
+
+        {/* Clinical Backstory Strip for Demos */}
+        {mode === 'demos' && (
+          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#FAF8F5] border border-[#E5E0D8] rounded-[6px] text-[12px] text-[#48525B] shrink-0">
+            <span className="font-mono text-[10px] uppercase tracking-wider font-semibold text-[#2E6B56] bg-[#E8EFEA] border border-[#2E6B56]/20 px-2 py-0.5 rounded-[3px] shrink-0">
+              {CASE_BACKSTORIES[selectedCase].department}
+            </span>
+            <span className="font-sans text-[#1A1D20] leading-snug">
+              {CASE_BACKSTORIES[selectedCase].summary}
+            </span>
+          </div>
+        )}
 
         {/* WORKBENCH BODY */}
         {mode === 'demos' ? (
@@ -601,6 +730,12 @@ export function App() {
         )}
       </main>
       </div>
+
+      {/* Clinician Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
 
       {/* Dedicated Print Handoff Sheet */}
       <PrintHandoff model={activePresentationModel} />

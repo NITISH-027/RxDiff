@@ -23,6 +23,8 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
   onHoverDiff,
   onSelectDiff,
 }) => {
+  const [filterTab, setFilterTab] = React.useState<'all' | 'priority' | 'unchanged'>('all');
+
   const priorityItems = diffItems.filter((i) => i.diff.category !== 'unchanged');
   const unchangedItems = diffItems.filter((i) => i.diff.category === 'unchanged');
 
@@ -55,8 +57,50 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
         </div>
       </div>
 
+      {/* Interactive Category Filter Pills */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <button
+          type="button"
+          onClick={() => setFilterTab('all')}
+          className={`px-3 py-1 rounded-[4px] text-[11.5px] font-sans font-medium transition-colors border ${
+            filterTab === 'all'
+              ? 'bg-[#3D5A4C] text-white border-[#3D5A4C]'
+              : 'bg-white text-[#48525B] hover:bg-[#FAF8F5] border-[#E5E0D8]'
+          }`}
+        >
+          All Items ({diffItems.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilterTab('priority')}
+          className={`px-3 py-1 rounded-[4px] text-[11.5px] font-sans font-medium transition-colors border flex items-center gap-1.5 ${
+            filterTab === 'priority'
+              ? 'bg-[#B45309] text-white border-[#B45309]'
+              : 'bg-white text-[#48525B] hover:bg-[#FAF8F5] border-[#E5E0D8]'
+          }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#B45309]" />
+          Action Required ({priorityItems.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilterTab('unchanged')}
+          className={`px-3 py-1 rounded-[4px] text-[11.5px] font-sans font-medium transition-colors border flex items-center gap-1.5 ${
+            filterTab === 'unchanged'
+              ? 'bg-[#2E6B56] text-white border-[#2E6B56]'
+              : 'bg-white text-[#48525B] hover:bg-[#FAF8F5] border-[#E5E0D8]'
+          }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#2E6B56]" />
+          Continuing ({unchangedItems.length})
+        </button>
+      </div>
+
       {/* Priority Differences Cards */}
-      <div className="space-y-3.5">
+      {filterTab !== 'unchanged' && (
+        <div className="space-y-3.5">
         {priorityItems.map((item) => {
           const isActive = activeDiffId === item.diff.diff_id;
           const isDimmed = activeDiffId !== null && !isActive;
@@ -178,10 +222,11 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Secondary Section: Unchanged Regimen Items */}
-      {unchangedItems.length > 0 && (
+      {unchangedItems.length > 0 && filterTab !== 'priority' && (
         <div className="pt-3 border-t border-[#E5E0D8] space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-sans text-[11.5px] font-semibold uppercase tracking-wider text-[#75808B]">

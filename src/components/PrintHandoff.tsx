@@ -55,6 +55,7 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
               <th className="p-2">Medication</th>
               <th className="p-2">Change Observed</th>
               <th className="p-2">Question for Doctor/Pharmacist</th>
+              <th className="p-2 text-center w-[120px]">Verification</th>
             </tr>
           </thead>
           <tbody>
@@ -82,6 +83,16 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
                   <td className="p-2 font-medium text-black">
                     &ldquo;{item.patientQuestion}&rdquo;
                   </td>
+                  <td className="p-2 font-mono text-[8pt] text-gray-700 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="inline-block w-3 h-3 border border-gray-500 rounded-[2px]" />
+                      <span>Verified</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-block w-3 h-3 border border-gray-500 rounded-[2px]" />
+                      <span>Clarified MD</span>
+                    </div>
+                  </td>
                 </tr>
               ))}
           </tbody>
@@ -101,6 +112,7 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
                 <th className="p-1.5">Regimen Details</th>
                 <th className="p-1.5">Confirmation Question</th>
                 <th className="p-1.5">Source Evidence Line</th>
+                <th className="p-1.5 text-center w-[90px]">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -118,12 +130,43 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
                     <td className="p-1.5 font-mono text-gray-600 text-[8.5pt]">
                       &ldquo;{item.beforeMention?.evidence_quote ?? item.afterMention?.evidence_quote}&rdquo;
                     </td>
+                    <td className="p-1.5 font-mono text-[8pt] text-gray-700 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <span className="inline-block w-3 h-3 border border-gray-400 rounded-[2px]" />
+                        <span>Continuing</span>
+                      </div>
+                    </td>
                   </tr>
                 ))}
             </tbody>
           </table>
         </div>
       )}
+
+      {/* Pharmacist / Clinician Sign-Off Block */}
+      <div className="mb-6 p-4 border border-gray-400 rounded bg-gray-50">
+        <h3 className="font-mono text-[10pt] font-bold uppercase tracking-wider text-gray-800 mb-3">
+          Pharmacist / Clinician Reconciliation Sign-Off
+        </h3>
+        <div className="grid grid-cols-3 gap-6 text-[9.5pt] font-mono">
+          <div>
+            <div className="text-gray-600 mb-1">Reviewing Clinician / License #:</div>
+            <div className="border-b border-gray-400 h-6"></div>
+          </div>
+          <div>
+            <div className="text-gray-600 mb-1">Signature:</div>
+            <div className="border-b border-gray-400 h-6"></div>
+          </div>
+          <div>
+            <div className="text-gray-600 mb-1">Date & Time:</div>
+            <div className="border-b border-gray-400 h-6"></div>
+          </div>
+        </div>
+        <div className="mt-3 text-[8.5pt] text-gray-600 font-mono">
+          Clinical Notes / Prescriber Clarifications:
+          <div className="border-b border-dashed border-gray-300 h-5 mt-1"></div>
+        </div>
+      </div>
 
       {/* Limitations and Disclaimers */}
       <div className="border-t border-gray-400 pt-4 text-[9pt] text-gray-600 font-mono">

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import type { PresentationDiffItem } from '../adapters/presentationAdapter.js';
 import { WarningIcon, CloseIcon } from './Icons.js';
+import { computeWordDiff } from '../utils/wordDiff.js';
 
 interface EvidenceInspectorProps {
   item: PresentationDiffItem;
@@ -38,6 +39,15 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
   isMobileSheet = false,
 }) => {
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [showWordDiff, setShowWordDiff] = useState<boolean>(true);
+
+  const wordDiff = useMemo(() => {
+    if (!item.beforeMention || !item.afterMention) return null;
+    return computeWordDiff(
+      item.beforeMention.evidence_quote,
+      item.afterMention.evidence_quote
+    );
+  }, [item.beforeMention, item.afterMention]);
 
   // Auto-focus the close button in mobile sheet for accessible focus trapping
   useEffect(() => {
@@ -147,6 +157,21 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
 
         {/* 3. BEFORE / AFTER Exact Quotes on Warm Paper Slips */}
         <div className="space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="font-sans text-[11px] uppercase tracking-wider text-[#3D5A4C] font-semibold">
+              Evidence Quotes & Comparison
+            </span>
+            {wordDiff && (
+              <button
+                type="button"
+                onClick={() => setShowWordDiff((prev) => !prev)}
+                className="text-[10.5px] font-mono px-2 py-0.5 rounded border border-[#E5E0D8] bg-white hover:bg-[#F5F2EB] text-[#48525B] transition-colors"
+              >
+                {showWordDiff ? '● Diff Highlighted' : '○ Plain Quotes'}
+              </button>
+            )}
+          </div>
+
           {/* BEFORE Quote */}
           <div>
             <div className="flex items-center justify-between text-[11px] font-mono text-[#75808B] mb-1">
@@ -155,7 +180,25 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
 
             {item.beforeMention ? (
               <blockquote className="p-3 rounded-[4px] bg-[#FAF8F5] text-[#1A1D20] font-mono text-[12px] leading-[18px] border border-[#E5E0D8] shadow-xs">
-                &ldquo;{item.beforeMention.evidence_quote}&rdquo;
+                <span className="sr-only">&ldquo;{item.beforeMention.evidence_quote}&rdquo;</span>
+                <span aria-hidden="true">
+                  &ldquo;
+                  {showWordDiff && wordDiff
+                    ? wordDiff.beforeTokens.map((t, i) => (
+                        <span
+                          key={i}
+                          className={
+                            t.type === 'removed'
+                              ? 'bg-[#FEE2E2] text-[#991B1B] font-semibold px-0.5 rounded-[2px]'
+                              : ''
+                          }
+                        >
+                          {t.value}
+                        </span>
+                      ))
+                    : item.beforeMention.evidence_quote}
+                  &rdquo;
+                </span>
               </blockquote>
             ) : (
               <div className="p-2.5 rounded-[4px] bg-[#FAF8F5]/60 border border-[#E5E0D8] text-[#75808B] font-mono text-[11.5px] italic">
@@ -172,7 +215,25 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
 
             {item.afterMention ? (
               <blockquote className="p-3 rounded-[4px] bg-[#FAF8F5] text-[#1A1D20] font-mono text-[12px] leading-[18px] border border-[#E5E0D8] shadow-xs">
-                &ldquo;{item.afterMention.evidence_quote}&rdquo;
+                <span className="sr-only">&ldquo;{item.afterMention.evidence_quote}&rdquo;</span>
+                <span aria-hidden="true">
+                  &ldquo;
+                  {showWordDiff && wordDiff
+                    ? wordDiff.afterTokens.map((t, i) => (
+                        <span
+                          key={i}
+                          className={
+                            t.type === 'added'
+                              ? 'bg-[#DCFCE7] text-[#166534] font-semibold px-0.5 rounded-[2px]'
+                              : ''
+                          }
+                        >
+                          {t.value}
+                        </span>
+                      ))
+                    : item.afterMention.evidence_quote}
+                  &rdquo;
+                </span>
               </blockquote>
             ) : (
               <div className="p-2.5 rounded-[4px] bg-[#FAF8F5]/60 border border-[#E5E0D8] text-[#75808B] font-mono text-[11.5px] italic">

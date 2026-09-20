@@ -25,6 +25,7 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const previewUrl = useMemo(() => {
     if (!file) return null;
@@ -48,8 +49,7 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (disabled) return;
-    setIsDragOver(true);
+    if (!disabled) setIsDragOver(true);
   };
 
   const handleDragLeave = () => {
@@ -93,11 +93,30 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
             [{subtitle}]
           </span>
         </div>
-        {file && (
-          <span className="font-mono text-[10px] text-[#75808B] tabular-nums">
-            {formatFileSize(file.size)}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {!file && !disabled && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                cameraInputRef.current?.click();
+              }}
+              title="Snap photo directly with mobile camera"
+              className="inline-flex sm:hidden items-center gap-1 px-2 py-0.5 text-[10px] font-mono bg-[#FAF8F5] text-[#3D5A4C] border border-[#E5E0D8] rounded hover:bg-[#F5F2EB]"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Camera</span>
+            </button>
+          )}
+          {file && (
+            <span className="font-mono text-[10px] text-[#75808B] tabular-nums">
+              {formatFileSize(file.size)}
+            </span>
+          )}
+        </div>
       </div>
 
       <input
@@ -108,6 +127,16 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
         disabled={disabled}
         className="hidden"
         aria-label={ariaLabel || label}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        onChange={handleFileChange}
+        disabled={disabled}
+        className="hidden"
+        aria-label={`Take camera photo for ${label}`}
       />
 
       {/* Sleeve Tray Container */}
