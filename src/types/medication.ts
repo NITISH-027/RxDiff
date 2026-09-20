@@ -97,7 +97,7 @@ export const MedicationDiffSchema = z.object({
   before_mention_id: z.string().nullable(),
   after_mention_id: z.string().nullable(),
   match_basis: MatchBasisSchema,
-  match_confidence: z.number(),
+  match_confidence: z.number().min(0).max(1),
   category: DiffCategorySchema,
   changed_fields: z.array(ChangedFieldSchema),
   explanation: z.string(),

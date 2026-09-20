@@ -3,11 +3,115 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  color-scheme: light dark;
+  --canvas: #080A0C;
+  --chrome: #0D1013;
+  --panel: #111519;
+  --panel-raised: #161B20;
+  --recessed: #07090B;
+  --paper: #F1EFE8;
+  --paper-ink: #191C1F;
+  --paper-muted: #676B70;
+  --line-dark: rgba(255, 255, 255, 0.075);
+  --line-active: rgba(255, 255, 255, 0.16);
+  --line-paper: #D9D5CC;
+  --text: #ECEDEB;
+  --text-2: #92989E;
+  --text-3: #5E656C;
+  --active: #38BDF8;
+  --matched: #34D399;
+  --changed: #F59E0B;
+  --stopped: #FB7185;
+  --duplicate: #A78BFA;
+  --uncertain: #94A3B8;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+  background-color: var(--canvas);
+  color: var(--text);
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+/* Tabular numbers for all monetary, numerical, and timeline data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle 1px press micro-interaction - strictly NO scaling on hover */
+button:active:not(:disabled),
+a:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Scan line animation for analysis strip */
+@keyframes scan-line {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Fade slide entry for cards */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-enter {
+  animation: card-enter 220ms ease-out forwards;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-scan-line,
+  .animate-card-enter {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Print styling */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
 }

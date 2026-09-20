@@ -1,182 +1,217 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BUNDLED_CASES } from './data/syntheticCases.js';
 import { buildDiffReport } from './engine/diffEngine.js';
+import { createPresentationModel } from './adapters/presentationAdapter.js';
+import { ReconciliationCanvas } from './components/ReconciliationCanvas.js';
+import { PrintHandoff } from './components/PrintHandoff.js';
 
 type CaseKey = 'case-a' | 'case-b' | 'case-c';
 
 export function App() {
   const [selectedCase, setSelectedCase] = useState<CaseKey>('case-a');
+  const [analyzingStep, setAnalyzingStep] = useState<number>(3); // 0: READ, 1: STRUCTURE, 2: MATCH, 3: REVIEWED
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+
   const currentCase = BUNDLED_CASES[selectedCase];
 
+  // Pure deterministic DiffReport
   const report = useMemo(() => {
     return buildDiffReport(currentCase.beforeDoc, currentCase.afterDoc);
   }, [currentCase]);
 
+  // Presentation Model
+  const presentationModel = useMemo(() => {
+    return createPresentationModel(currentCase, report);
+  }, [currentCase, report]);
+
+  const handleSelectCase = (caseId: CaseKey) => {
+    if (caseId === selectedCase) return;
+    setSelectedCase(caseId);
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      setAnalyzingStep(3);
+      setIsAnalyzing(false);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalyzingStep(0);
+  };
+
+  // Truthful analysis step progression (1.6s total)
+  useEffect(() => {
+    if (!isAnalyzing) return;
+
+    const t1 = setTimeout(() => setAnalyzingStep(1), 450);
+    const t2 = setTimeout(() => setAnalyzingStep(2), 900);
+    const t3 = setTimeout(() => {
+      setAnalyzingStep(3);
+      setIsAnalyzing(false);
+    }, 1600);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [isAnalyzing]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div
-      style={{
-        padding: '24px',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        maxWidth: '1200px',
-        margin: '0 auto',
-      }}
-    >
-      <header
-        style={{
-          marginBottom: '20px',
-          borderBottom: '1px solid #ccc',
-          paddingBottom: '12px',
-        }}
-      >
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>
-          RxDiff Stage 1 - Engine Verification Viewer
-        </h1>
-        <p style={{ margin: 0, color: '#555', fontSize: '14px' }}>
-          Minimal temporary developer page for verifying deterministic diff
-          engine output.
-        </p>
+    <div className="min-h-screen bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white">
+      {/* 44px Compact Top Bar */}
+      <header className="no-print h-[44px] bg-chrome border-b border-line-dark px-4 flex items-center justify-between gap-4 select-none z-30">
+        {/* Left: Brand Identity */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="font-mono text-[13px] font-bold tracking-[0.12em] text-white">
+            RXDIFF
+          </span>
+          <span className="text-[10px] text-text-3 font-mono border-l border-line-dark pl-2.5 tracking-[0.08em] hidden sm:inline">
+            MEDICATION RECONCILIATION
+          </span>
+        </div>
+
+        {/* Center: Persistent Clinical Safety Statement */}
+        <div className="hidden md:flex items-center justify-center flex-1 max-w-[640px] text-center">
+          <p className="font-mono text-[11px] text-text-2 tracking-tight line-clamp-1">
+            ⚠️ Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.
+          </p>
+        </div>
+
+        {/* Right: Synthetic Badge & Print Handoff Button */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded-[2px] bg-panel-raised text-text-3 border border-line-dark uppercase hidden sm:inline">
+            SYNTHETIC DEMO — NO PATIENT DATA
+          </span>
+
+          <button
+            onClick={handlePrint}
+            className="min-h-[28px] px-2.5 py-1 text-[11px] font-mono font-medium text-text-1 bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[3px] transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-active"
+            title="Open printable medication reconciliation handoff"
+          >
+            <span aria-hidden="true">🖨️</span>
+            <span>PRINT HANDOFF</span>
+          </button>
+        </div>
       </header>
 
-      {/* Case Selectors */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        {(['case-a', 'case-b', 'case-c'] as const).map((caseId) => (
-          <button
-            key={caseId}
-            id={`select-${caseId}`}
-            onClick={() => setSelectedCase(caseId)}
-            style={{
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: selectedCase === caseId ? 'bold' : 'normal',
-              backgroundColor: selectedCase === caseId ? '#1a56db' : '#f3f4f6',
-              color: selectedCase === caseId ? '#fff' : '#111',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+      {/* Main Workspace */}
+      <main className="no-print flex-1 flex flex-col max-w-[1440px] w-full mx-auto px-3 sm:px-4 py-3 sm:py-3.5 space-y-3">
+        {/* Compact Entry Area: Title + Terse Case Selectors */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-line-dark">
+          <div>
+            <h1 className="text-[17px] font-bold text-text-1 tracking-tight">
+              Two lists. One safer conversation.
+            </h1>
+            <p className="text-[12px] text-text-2 mt-0.5">
+              Deterministic verification between previous prescription and discharge lists.
+            </p>
+          </div>
+
+          {/* Three Terse Case Selectors */}
+          <div
+            className="flex items-center gap-1.5 bg-chrome p-1 rounded-[4px] border border-line-dark shrink-0"
+            role="tablist"
+            aria-label="Bundled Demo Cases"
           >
-            {caseId === 'case-a'
-              ? 'Case A (Regimen Changes)'
-              : caseId === 'case-b'
-                ? 'Case B (Omission Safety)'
-                : 'Case C (Alias & Duplicates)'}
-          </button>
-        ))}
-      </div>
-
-      {/* Case Summary */}
-      <div
-        style={{
-          padding: '12px',
-          background: '#f9fafb',
-          border: '1px solid #e5e7eb',
-          borderRadius: '4px',
-          marginBottom: '16px',
-        }}
-      >
-        <h2 style={{ margin: '0 0 6px 0', fontSize: '16px' }}>
-          {currentCase.title}
-        </h2>
-        <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#4b5563' }}>
-          {currentCase.description}
-        </p>
-
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            marginTop: '8px',
-          }}
-        >
-          {Object.entries(report.counts).map(([cat, count]) => {
-            if (count === 0) return null;
-            return (
-              <span
-                key={cat}
-                style={{
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  background: '#e0e7ff',
-                  color: '#3730a3',
-                  fontWeight: 600,
-                }}
-              >
-                {cat}: {count}
-              </span>
-            );
-          })}
+            {[
+              { id: 'case-a', label: 'A / Regimen changes' },
+              { id: 'case-b', label: 'B / Omission safety' },
+              { id: 'case-c', label: 'C / Alias duplicate' },
+            ].map((c) => {
+              const isSelected = selectedCase === c.id;
+              return (
+                <button
+                  key={c.id}
+                  id={`select-${c.id}`}
+                  onClick={() => handleSelectCase(c.id as CaseKey)}
+                  role="tab"
+                  aria-selected={isSelected}
+                  className={`min-h-[32px] px-3 py-1 text-[11.5px] font-mono rounded-[3px] transition-all ${
+                    isSelected
+                      ? 'bg-panel-raised text-white font-bold border border-line-active shadow-sm'
+                      : 'text-text-3 hover:text-text-2 hover:bg-panel'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Diff Table Summary */}
-      <div style={{ marginBottom: '16px' }}>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>
-          Diff Category Breakdown
-        </h3>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '13px',
-            textAlign: 'left',
-          }}
-        >
-          <thead>
-            <tr
-              style={{ background: '#f3f4f6', borderBottom: '1px solid #d1d5db' }}
+        {/* 36px Analysis Strip */}
+        <div className="relative h-[36px] bg-panel rounded-[4px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none">
+          {/* Scan line effect during animation */}
+          {isAnalyzing && (
+            <div
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-active/20 to-transparent animate-scan-line pointer-events-none"
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Stepper Pipeline */}
+          <div className="flex items-center gap-1 sm:gap-2 text-[10.5px] font-mono">
+            <span
+              className={`${
+                analyzingStep >= 0 ? 'text-active font-bold' : 'text-text-3'
+              }`}
             >
-              <th style={{ padding: '6px 8px' }}>ID</th>
-              <th style={{ padding: '6px 8px' }}>Category</th>
-              <th style={{ padding: '6px 8px' }}>Match Basis</th>
-              <th style={{ padding: '6px 8px' }}>Changed Fields</th>
-              <th style={{ padding: '6px 8px' }}>Explanation</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.diffs.map((diff) => (
-              <tr
-                key={diff.diff_id}
-                style={{ borderBottom: '1px solid #e5e7eb' }}
-              >
-                <td style={{ padding: '6px 8px', fontFamily: 'monospace' }}>
-                  {diff.diff_id}
-                </td>
-                <td style={{ padding: '6px 8px', fontWeight: 600 }}>
-                  {diff.category}
-                </td>
-                <td style={{ padding: '6px 8px' }}>{diff.match_basis}</td>
-                <td style={{ padding: '6px 8px' }}>
-                  {diff.changed_fields.join(', ') || '—'}
-                </td>
-                <td style={{ padding: '6px 8px' }}>{diff.explanation}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              READ {analyzingStep > 0 && '✓'}
+            </span>
+            <span className="text-text-3">→</span>
+            <span
+              className={`${
+                analyzingStep >= 1 ? 'text-active font-bold' : 'text-text-3'
+              }`}
+            >
+              STRUCTURE {analyzingStep > 1 && '✓'}
+            </span>
+            <span className="text-text-3">→</span>
+            <span
+              className={`${
+                analyzingStep >= 2 ? 'text-active font-bold' : 'text-text-3'
+              }`}
+            >
+              MATCH {analyzingStep > 2 && '✓'}
+            </span>
+            <span className="text-text-3">→</span>
+            <span
+              className={`${
+                analyzingStep >= 3 ? 'text-matched font-bold' : 'text-text-3'
+              }`}
+            >
+              REVIEW
+            </span>
 
-      {/* Full JSON Dump */}
-      <div>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>
-          Full DiffReport JSON
-        </h3>
-        <pre
-          id="report-json"
-          style={{
-            padding: '12px',
-            backgroundColor: '#1e293b',
-            color: '#f8fafc',
-            borderRadius: '4px',
-            overflowX: 'auto',
-            fontSize: '12px',
-            maxHeight: '400px',
-          }}
-        >
-          {JSON.stringify(report, null, 2)}
-        </pre>
-      </div>
+            <span className="text-text-3 ml-2 pl-2 border-l border-line-dark hidden md:inline">
+              Structured demo case
+            </span>
+          </div>
+
+          {/* Real Summary Metric */}
+          <div className="font-mono text-[11px] font-bold text-text-1 tracking-wider tabular-nums">
+            {isAnalyzing ? (
+              <span className="text-text-3 italic">Analyzing regimen...</span>
+            ) : (
+              <span>{presentationModel.summaryText}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Reconciliation Canvas (31% BEFORE / 38% Spine / 31% AFTER) */}
+        <ReconciliationCanvas model={presentationModel} />
+      </main>
+
+      {/* Dedicated Print Handoff Sheet */}
+      <PrintHandoff model={presentationModel} />
     </div>
   );
 }
