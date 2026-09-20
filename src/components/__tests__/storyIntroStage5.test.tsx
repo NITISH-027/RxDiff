@@ -152,4 +152,18 @@ describe('Stage 5 Scroll Story Intro', () => {
     const workspaceEl = container.querySelector('#workspace');
     expect(workspaceEl).toBeInTheDocument();
   });
+
+  it('renders 3 high-performance canvas elements for frame-sequence rendering', () => {
+    const { container } = render(<StoryIntro />);
+    const canvases = container.querySelectorAll('canvas');
+    expect(canvases.length).toBe(3);
+  });
+
+  it('displays the quiet frame loading indicator during initial frame preparation', () => {
+    render(<StoryIntro />);
+    const indicator = screen.getByLabelText(/Story loading status/i);
+    expect(indicator).toBeInTheDocument();
+    expect(indicator).toHaveTextContent(/Preparing visual story/i);
+  });
 });
+
