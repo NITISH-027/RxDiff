@@ -79,20 +79,20 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#101417] border border-line-dark rounded-[8px] p-3 shadow-sm select-none overflow-hidden">
+    <div className="flex flex-col h-full bg-white border border-[#E5E0D8] rounded-[6px] p-3.5 shadow-card select-none overflow-hidden">
       {/* Sleeve Header */}
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-line-dark/60">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E0D8]">
         <div className="flex items-baseline gap-2">
-          <span className="font-sans text-[12px] font-semibold tracking-wide text-text-1 uppercase">
+          <span className="font-sans text-[12px] font-semibold tracking-wide text-[#1A1D20]">
             <span>{label}</span>
             {srLabel && <span className="sr-only">{srLabel}</span>}
           </span>
-          <span className="text-[10.5px] text-text-3 font-mono">
+          <span className="text-[10.5px] text-[#75808B] font-mono">
             [{subtitle}]
           </span>
         </div>
         {file && (
-          <span className="font-mono text-[10px] text-text-3 tabular-nums">
+          <span className="font-mono text-[10px] text-[#75808B] tabular-nums">
             {formatFileSize(file.size)}
           </span>
         )}
@@ -114,18 +114,18 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !file && !disabled && fileInputRef.current?.click()}
-        className={`flex-1 flex flex-col items-center justify-center p-3 rounded-[6px] transition-all duration-150 ${
+        className={`flex-1 flex flex-col items-center justify-center p-3 rounded-[5px] transition-all duration-150 ${
           file
-            ? 'bg-paper text-paper-ink border border-paper-edge shadow-paper'
+            ? 'bg-[#FAF8F5] text-[#1A1D20] border border-[#E5E0D8] shadow-xs'
             : isDragOver
-              ? 'border-2 border-dashed border-active bg-active/5'
-              : 'border border-dashed border-paper-edge/30 bg-[#0B0E10] hover:border-paper-edge/60 cursor-pointer'
+              ? 'border-2 border-dashed border-[#3D5A4C] bg-[#E8EFEA]/40'
+              : 'border border-dashed border-[#D5CFC5] bg-[#FAF8F5]/40 hover:bg-[#FAF8F5] hover:border-[#3D5A4C]/60 cursor-pointer'
         } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
       >
         {file && previewUrl ? (
           <div className="flex flex-col items-center justify-between h-full w-full gap-2.5">
             {/* Paper Document Preview */}
-            <div className="relative flex-1 w-full flex items-center justify-center min-h-[120px] max-h-[220px] bg-[#EAE6DD]/50 rounded-[4px] overflow-hidden border border-paper-edge/60">
+            <div className="relative flex-1 w-full flex items-center justify-center min-h-[120px] max-h-[220px] bg-white rounded-[4px] overflow-hidden border border-[#E5E0D8]">
               <img
                 src={previewUrl}
                 alt={`${label} Preview`}
@@ -134,12 +134,12 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
             </div>
 
             {/* Document Details & Replace/Remove Actions */}
-            <div className="w-full flex items-center justify-between gap-2 pt-2 border-t border-paper-edge/70 text-[11px] font-mono">
+            <div className="w-full flex items-center justify-between gap-2 pt-2 border-t border-[#E5E0D8] text-[11px] font-mono">
               <div className="flex flex-col min-w-0">
-                <span className="font-semibold text-paper-ink truncate max-w-[170px]">
+                <span className="font-medium text-[#1A1D20] truncate max-w-[170px]">
                   {file.name}
                 </span>
-                <span className="text-paper-muted text-[10px]">
+                <span className="text-[#75808B] text-[10px]">
                   {file.type.replace('image/', '')} · {formatFileSize(file.size)}
                 </span>
               </div>
@@ -152,7 +152,7 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
                     if (!disabled) fileInputRef.current?.click();
                   }}
                   disabled={disabled}
-                  className="px-2 py-1 bg-[#EAE6DD] hover:bg-[#DDD9CF] text-paper-ink text-[10.5px] font-sans font-medium rounded-[3px] transition-colors"
+                  className="px-2.5 py-1 bg-white hover:bg-[#F5F2EB] text-[#1A1D20] text-[10.5px] font-sans font-medium border border-[#E5E0D8] rounded-[3px] shadow-xs transition-colors"
                 >
                   Replace
                 </button>
@@ -163,7 +163,7 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
                     if (!disabled) onFileRemoved();
                   }}
                   disabled={disabled}
-                  className="px-2 py-1 bg-[#FB7185]/15 hover:bg-[#FB7185]/25 text-[#BE123C] text-[10.5px] font-sans font-medium rounded-[3px] transition-colors"
+                  className="px-2.5 py-1 bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#9F1239] text-[10.5px] font-sans font-medium rounded-[3px] transition-colors"
                 >
                   Remove
                 </button>
@@ -171,12 +171,12 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
             </div>
           </div>
         ) : (
-          /* Inset Paper Silhouette Empty State */
+          /* Empty State */
           <div className="flex flex-col items-center justify-center text-center space-y-1.5 py-4 px-3">
-            <div className="w-9 h-9 rounded-[5px] bg-[#161B20] border border-line-dark flex items-center justify-center text-text-3 mb-1">
+            <div className="w-9 h-9 rounded-[5px] bg-white border border-[#E5E0D8] shadow-xs flex items-center justify-center text-[#75808B] mb-1">
               <svg
                 aria-hidden="true"
-                className="w-4 h-4 text-text-2"
+                className="w-4 h-4 text-[#48525B]"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.75"
@@ -189,10 +189,10 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
                 />
               </svg>
             </div>
-            <p className="font-sans text-[13px] font-medium text-text-1">
+            <p className="font-sans text-[13px] font-medium text-[#1A1D20]">
               Place image
             </p>
-            <p className="text-[11px] text-text-3 font-mono leading-tight">
+            <p className="text-[11px] text-[#75808B] font-mono leading-tight">
               JPEG, PNG, or WebP up to 5 MB
             </p>
           </div>

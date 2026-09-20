@@ -20,28 +20,32 @@ export const SourceRail: React.FC<SourceRailProps> = ({
   onSelectMention,
   railType,
 }) => {
+  const displayTitle =
+    railType === 'before' ? 'Previous medication list' : 'Discharge medication list';
+
   return (
     <div
-      className="flex flex-col h-full bg-paper text-paper-ink border border-paper-edge rounded-[6px] shadow-paper overflow-hidden select-none"
+      className="flex flex-col h-full bg-white text-[#1A1D20] border border-[#E5E0D8] rounded-[6px] shadow-card overflow-hidden select-none"
       data-testid={`source-rail-${railType}`}
     >
-      {/* Continuous Document Masthead */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-paper-edge bg-[#EAE6DD] shrink-0">
+      {/* Editorial Panel Masthead */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#E5E0D8] bg-[#FAF8F5] shrink-0">
         <div className="flex items-baseline gap-2">
-          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-paper-ink uppercase">
-            {title}
+          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-[#1A1D20]">
+            <span>{displayTitle}</span>
+            <span className="sr-only">{title}</span>
           </h2>
-          <span className="text-[10.5px] text-paper-muted font-mono uppercase tracking-wider">
+          <span className="text-[10px] text-[#75808B] font-mono uppercase tracking-wider">
             [{sourceType}]
           </span>
         </div>
-        <span className="font-mono text-[11px] text-paper-muted tabular-nums">
+        <span className="font-mono text-[11px] text-[#75808B] tabular-nums">
           {mentions.length} {mentions.length === 1 ? 'ITEM' : 'ITEMS'}
         </span>
       </div>
 
-      {/* Continuous Paper Rows Container (14-16px rhythm) */}
-      <div className="flex-1 overflow-y-auto divide-y divide-paper-edge/75">
+      {/* Rows Container */}
+      <div className="flex-1 overflow-y-auto divide-y divide-[#E5E0D8]/60">
         {mentions.map((item) => {
           const isActive = activeMentionId === item.mention.mention_id;
           const isDimmed =
@@ -53,29 +57,29 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               id={`${railType}-${item.mention.mention_id}`}
               data-anchor-id={`${railType}-${item.mention.mention_id}`}
               onClick={() => onSelectMention?.(item.mention.mention_id)}
-              className={`relative px-3 py-2.5 transition-all duration-150 cursor-pointer ${
+              className={`relative px-3.5 py-2.5 transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-white ring-1 ring-active border-active z-10'
-                  : 'hover:bg-[#FAF9F5]'
+                  ? 'bg-[#FAF8F5] ring-1 ring-[#3D5A4C]/40 z-10'
+                  : 'bg-white hover:bg-[#FAF8F5]'
               } ${isDimmed ? 'opacity-35' : 'opacity-100'}`}
               style={{
-                borderLeft: isActive ? '3px solid #38BDF8' : undefined,
+                borderLeft: isActive ? '3px solid #3D5A4C' : undefined,
               }}
             >
               {/* Row Header: Gutter Marker + Status Pill */}
               <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="font-mono text-[11px] font-semibold text-paper-ink bg-[#E3DFD4] px-1.5 py-0.5 rounded-[2px] tabular-nums">
+                <span className="font-mono text-[11px] font-medium text-[#48525B] bg-[#F5F2EB] px-1.5 py-0.5 rounded-[2px] tabular-nums">
                   {item.marker}
                 </span>
 
                 {item.mention.status_word !== 'none' && (
                   <span
-                    className={`font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] uppercase ${
+                    className={`font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-[2px] uppercase ${
                       item.mention.status_word === 'stop' || item.mention.status_word === 'hold'
-                        ? 'bg-[#FB7185]/20 text-[#BE123C]'
+                        ? 'bg-[#FFE4E6] text-[#9F1239]'
                         : item.mention.status_word === 'start'
-                          ? 'bg-[#38BDF8]/20 text-[#0369A1]'
-                          : 'bg-[#EAE6DD] text-paper-muted'
+                          ? 'bg-[#E8EFEA] text-[#2E6B56]'
+                          : 'bg-[#F5F2EB] text-[#75808B]'
                     }`}
                   >
                     {item.mention.status_word}
@@ -83,30 +87,30 @@ export const SourceRail: React.FC<SourceRailProps> = ({
                 )}
               </div>
 
-              {/* Exact Evidence Line (Dominant line) */}
-              <p className="font-mono text-[12.5px] leading-[18px] text-paper-ink mb-1.5 break-words">
+              {/* Exact Evidence Line */}
+              <p className="font-mono text-[12px] leading-[18px] text-[#1A1D20] mb-1.5 break-words font-normal">
                 &ldquo;{item.mention.evidence_quote}&rdquo;
               </p>
 
-              {/* Parsed Values as Quiet Mono Annotations */}
-              <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-mono text-paper-muted">
+              {/* Parsed Values as Quiet Annotations */}
+              <div className="flex flex-wrap gap-1.5 pt-0.5 text-[10.5px] font-mono text-[#526071]">
                 {item.mention.strength_value !== null && (
-                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
+                  <span className="bg-[#FAF8F5] px-1.5 py-0.5 rounded-[2px] tabular-nums border border-[#E5E0D8]/70">
                     {item.mention.strength_value} {item.mention.strength_unit ?? ''}
                   </span>
                 )}
                 {item.mention.dose_quantity !== null && (
-                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
+                  <span className="bg-[#FAF8F5] px-1.5 py-0.5 rounded-[2px] tabular-nums border border-[#E5E0D8]/70">
                     {item.mention.dose_quantity} {item.mention.dose_form ?? 'dose'}
                   </span>
                 )}
                 {item.mention.route && (
-                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium">
+                  <span className="bg-[#FAF8F5] px-1.5 py-0.5 rounded-[2px] border border-[#E5E0D8]/70">
                     {item.mention.route}
                   </span>
                 )}
                 {item.mention.frequency_raw && (
-                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium truncate max-w-[170px]">
+                  <span className="bg-[#FAF8F5] px-1.5 py-0.5 rounded-[2px] border border-[#E5E0D8]/70 truncate max-w-[170px]">
                     {item.mention.frequency_raw}
                   </span>
                 )}
@@ -116,7 +120,7 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               <div
                 className={`absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
                   railType === 'before' ? '-right-[4px]' : '-left-[4px]'
-                } ${isActive ? 'bg-[#38BDF8]' : 'bg-transparent'}`}
+                } ${isActive ? 'bg-[#3D5A4C]' : 'bg-transparent'}`}
                 aria-hidden="true"
               />
             </div>

@@ -23,6 +23,15 @@ function formatMatchBasis(basis: string): string {
   }
 }
 
+const humanReadableCategoryMap: Record<string, string> = {
+  'APPEARS NEW': 'New order',
+  'EXPLICIT STOP WORDING': 'Explicit stop instruction',
+  'CHANGED': 'Changed instruction',
+  'NEEDS CONFIRMATION': 'Needs confirmation',
+  'POSSIBLE DUPLICATE': 'Possible duplicate',
+  'TEXT MATCHED': 'Regimen consistent',
+};
+
 export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
   item,
   onClose,
@@ -50,25 +59,25 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
 
   return (
     <div
-      className={`flex flex-col h-full bg-panel border border-line-dark shadow-xl overflow-hidden animate-card-enter ${
+      className={`flex flex-col h-full bg-white border border-[#E5E0D8] shadow-card overflow-hidden animate-card-enter ${
         isMobileSheet ? 'rounded-t-[8px]' : 'rounded-[6px]'
       }`}
       data-testid="evidence-inspector"
     >
       {/* Mobile Drawer Handle Pill */}
       {isMobileSheet && (
-        <div className="pt-2.5 pb-1 flex justify-center bg-chrome" aria-hidden="true">
-          <div className="w-10 h-1 rounded-full bg-text-3/40" />
+        <div className="pt-2.5 pb-1 flex justify-center bg-[#FAF8F5]" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-[#D5CFC5]" />
         </div>
       )}
 
       {/* Header with Return to source affordance */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-line-dark bg-chrome shrink-0">
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#E5E0D8] bg-[#FAF8F5] shrink-0">
         <div className="flex items-baseline gap-2">
-          <span className="font-sans text-[12px] font-semibold tracking-wide text-active uppercase">
+          <span className="font-sans text-[12px] font-semibold tracking-wide text-[#3D5A4C]">
             Clinical review sheet
           </span>
-          <span className="text-[10px] text-text-3 font-mono">
+          <span className="text-[10.5px] text-[#75808B] font-mono">
             [{item.diff.diff_id}]
           </span>
         </div>
@@ -76,20 +85,20 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
         <button
           ref={closeBtnRef}
           onClick={onClose}
-          className="min-h-[30px] flex items-center justify-center gap-1.5 px-2.5 py-1 text-[11px] font-sans font-medium text-text-2 hover:text-white bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[4px] transition-colors focus-visible:ring-2 focus-visible:ring-active"
+          className="min-h-[30px] flex items-center justify-center gap-1.5 px-2.5 py-1 text-[11px] font-sans font-medium text-[#48525B] hover:text-[#1A1D20] bg-white hover:bg-[#F5F2EB] active:translate-y-[1px] border border-[#E5E0D8] rounded-[4px] transition-colors focus-visible:ring-2 focus-visible:ring-[#3D5A4C]"
           title="Restore source rail (Escape)"
           aria-label={isMobileSheet ? 'close evidence sheet' : 'restore source rail'}
         >
           {isMobileSheet ? (
             <>
-              <CloseIcon className="w-3.5 h-3.5 text-text-2" />
+              <CloseIcon className="w-3.5 h-3.5 text-[#48525B]" />
               <span className="font-mono text-[11px] uppercase">Close</span>
             </>
           ) : (
             <>
               <span>Return to source</span>
               <span className="sr-only">VIEW ORIGINAL</span>
-              <kbd className="text-[9px] font-mono bg-chrome px-1 py-0.5 rounded text-text-3 border border-line-dark">
+              <kbd className="text-[9px] font-mono bg-[#FAF8F5] px-1 py-0.5 rounded text-[#75808B] border border-[#E5E0D8]">
                 ESC
               </kbd>
             </>
@@ -98,14 +107,14 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
       </div>
 
       {/* Clinical Review Sheet Body */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+      <div className="flex-1 p-4 space-y-3.5 overflow-y-auto">
         {/* 1. Category Chip + Medicine Name */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span
-              className="font-mono text-[10px] font-bold tracking-[0.08em] px-2 py-0.5 rounded-[2px] uppercase flex items-center gap-1.5"
+              className="font-sans text-[11px] font-medium tracking-normal px-2 py-0.5 rounded-[3px] flex items-center gap-1.5"
               style={{
-                backgroundColor: `color-mix(in srgb, ${item.categoryColor} 15%, transparent)`,
+                backgroundColor: `color-mix(in srgb, ${item.categoryColor} 12%, transparent)`,
                 color: item.categoryColor,
               }}
             >
@@ -114,21 +123,24 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
                 style={{ backgroundColor: item.categoryColor }}
                 aria-hidden="true"
               />
-              {item.userFacingCategory}
+              <span>
+                <span>{humanReadableCategoryMap[item.userFacingCategory] || item.userFacingCategory}</span>
+                <span className="sr-only">{item.userFacingCategory}</span>
+              </span>
             </span>
           </div>
 
-          <h2 className="font-sans text-[17px] font-semibold text-text-1 leading-snug">
+          <h2 className="font-serif text-[18px] font-semibold text-[#1A1D20] leading-snug">
             {item.displayName}
           </h2>
         </div>
 
-        {/* 2. Neutral Patient/Doctor Question in 16-18px sans */}
-        <div className="p-3.5 rounded-[6px] bg-[#101417] border border-line-dark">
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-active block mb-1.5">
+        {/* 2. Confirmation Question for Clinician */}
+        <div className="p-3.5 rounded-[5px] bg-[#FAF8F5] border border-[#E5E0D8]">
+          <span className="font-sans text-[11px] uppercase tracking-wider text-[#3D5A4C] font-semibold block mb-1">
             Confirmation question for clinician
           </span>
-          <p className="font-sans text-[16px] text-text-1 font-medium leading-[23px]">
+          <p className="font-sans text-[15px] text-[#1A1D20] font-medium leading-[22px]">
             &ldquo;{item.patientQuestion}&rdquo;
           </p>
         </div>
@@ -137,16 +149,16 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
         <div className="space-y-2.5">
           {/* BEFORE Quote */}
           <div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-text-3 mb-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#75808B] mb-1">
               <span>01 BEFORE EVIDENCE {item.beforeMarker ? `[${item.beforeMarker}]` : ''}</span>
             </div>
 
             {item.beforeMention ? (
-              <blockquote className="p-3 rounded-[5px] bg-paper text-paper-ink font-mono text-[12.5px] leading-[18px] border border-paper-edge shadow-paper">
+              <blockquote className="p-3 rounded-[4px] bg-[#FAF8F5] text-[#1A1D20] font-mono text-[12px] leading-[18px] border border-[#E5E0D8] shadow-xs">
                 &ldquo;{item.beforeMention.evidence_quote}&rdquo;
               </blockquote>
             ) : (
-              <div className="p-2.5 rounded-[5px] bg-recessed border border-line-dark text-text-3 font-mono text-[11.5px] italic">
+              <div className="p-2.5 rounded-[4px] bg-[#FAF8F5]/60 border border-[#E5E0D8] text-[#75808B] font-mono text-[11.5px] italic">
                 No matching line (not present on previous list)
               </div>
             )}
@@ -154,16 +166,16 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
 
           {/* AFTER Quote */}
           <div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-text-3 mb-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#75808B] mb-1">
               <span>02 AFTER EVIDENCE {item.afterMarker ? `[${item.afterMarker}]` : ''}</span>
             </div>
 
             {item.afterMention ? (
-              <blockquote className="p-3 rounded-[5px] bg-paper text-paper-ink font-mono text-[12.5px] leading-[18px] border border-paper-edge shadow-paper">
+              <blockquote className="p-3 rounded-[4px] bg-[#FAF8F5] text-[#1A1D20] font-mono text-[12px] leading-[18px] border border-[#E5E0D8] shadow-xs">
                 &ldquo;{item.afterMention.evidence_quote}&rdquo;
               </blockquote>
             ) : (
-              <div className="p-2.5 rounded-[5px] bg-recessed border border-line-dark text-text-3 font-mono text-[11.5px] italic">
+              <div className="p-2.5 rounded-[4px] bg-[#FAF8F5]/60 border border-[#E5E0D8] text-[#75808B] font-mono text-[11.5px] italic">
                 No matching line (omitted from discharge list)
               </div>
             )}
@@ -171,32 +183,32 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
         </div>
 
         {/* 4. Why this was flagged */}
-        <div className="p-3 rounded-[5px] bg-chrome border border-line-dark">
-          <span className="font-sans text-[11.5px] font-semibold uppercase tracking-[0.06em] text-text-2 block mb-1">
+        <div className="p-3 rounded-[4px] bg-[#FAF8F5] border border-[#E5E0D8]">
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.06em] text-[#48525B] block mb-1">
             <span>Why this was flagged</span>
             <span className="sr-only">Engine Explanation</span>
           </span>
-          <p className="font-sans text-[13px] text-text-2 leading-[19px]">
+          <p className="font-sans text-[13px] text-[#48525B] leading-[18.5px]">
             {item.diff.explanation}
           </p>
         </div>
 
         {/* 5. Quiet Match Basis & Changed Fields */}
-        <div className="pt-2 border-t border-line-dark flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-[12px] font-sans text-text-3">
-            <span className="text-text-3">Match basis:</span>
-            <span className="text-text-2 font-medium">
+        <div className="pt-2 border-t border-[#E5E0D8] flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-[12px] font-sans text-[#75808B]">
+            <span>Match basis:</span>
+            <span className="text-[#48525B] font-medium">
               {formatMatchBasis(item.diff.match_basis)}
             </span>
           </div>
 
           {item.diff.changed_fields.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[12px] font-sans text-text-3">Changed fields:</span>
+              <span className="text-[12px] font-sans text-[#75808B]">Changed fields:</span>
               {item.diff.changed_fields.map((field) => (
                 <span
                   key={field}
-                  className="font-mono text-[10.5px] px-1.5 py-0.5 rounded-[2px] bg-changed/10 text-changed border border-changed/20 uppercase font-semibold"
+                  className="font-mono text-[10px] px-1.5 py-0.5 rounded-[2px] bg-[#FEF3C7] text-[#B45309] border border-[#B45309]/20 uppercase font-medium"
                 >
                   {field}
                 </span>
@@ -206,9 +218,9 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
         </div>
 
         {/* 6. Safety Reminder */}
-        <div className="pt-2 border-t border-line-dark">
-          <p className="font-sans text-[11.5px] text-text-3 italic leading-[16px] flex items-start gap-1.5">
-            <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0 mt-0.5" />
+        <div className="pt-2 border-t border-[#E5E0D8]">
+          <p className="font-sans text-[11px] text-[#75808B] leading-[16px] flex items-start gap-1.5">
+            <WarningIcon className="w-3.5 h-3.5 text-[#B45309] shrink-0 mt-0.5" />
             <span>
               Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.
             </span>

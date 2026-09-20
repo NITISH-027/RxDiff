@@ -132,13 +132,13 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
 
         return (
           <g key={`${seg.diffId}-${seg.gutter}-${idx}`}>
-            {/* Connector Path: subtle warm-gray hairline (18-24% opacity) / active sky (1.5px, 80% opacity) */}
+            {/* Connector Path: subtle warm-gray hairline (stroke="#D8D2C6") / active muted sage #3D5A4C */}
             <path
               d={seg.d}
               fill="none"
-              stroke={isActive ? '#38BDF8' : 'rgba(216, 210, 197, 0.22)'}
+              stroke={isActive ? '#3D5A4C' : '#D8D2C6'}
               strokeWidth={isActive ? 1.5 : 1}
-              strokeOpacity={isDimmed ? 0.05 : isActive ? 0.85 : 0.22}
+              strokeOpacity={isDimmed ? 0.08 : isActive ? 0.9 : 0.45}
               className="transition-all duration-150"
             />
           </g>

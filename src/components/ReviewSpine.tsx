@@ -8,6 +8,15 @@ interface ReviewSpineProps {
   onSelectDiff: (diffId: string) => void;
 }
 
+const humanReadableCategoryMap: Record<string, string> = {
+  'APPEARS NEW': 'New order',
+  'EXPLICIT STOP WORDING': 'Explicit stop instruction',
+  'CHANGED': 'Changed instruction',
+  'NEEDS CONFIRMATION': 'Needs confirmation',
+  'POSSIBLE DUPLICATE': 'Possible duplicate',
+  'TEXT MATCHED': 'Regimen consistent',
+};
+
 export const ReviewSpine: React.FC<ReviewSpineProps> = ({
   diffItems,
   activeDiffId,
@@ -16,29 +25,29 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col h-full bg-panel border border-line-dark rounded-[6px] shadow-sm overflow-hidden select-none"
+      className="flex flex-col h-full bg-white border border-[#E5E0D8] rounded-[6px] shadow-card overflow-hidden select-none"
       data-testid="review-spine"
     >
       {/* Header: Medication review / Priority order / N comparisons */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-line-dark bg-chrome shrink-0">
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-[#E5E0D8] bg-[#FAF8F5] shrink-0">
         <div className="flex items-baseline gap-2">
-          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-text-1 uppercase">
+          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-[#1A1D20]">
             <span>Medication review</span>
             <span className="sr-only">RECONCILIATION SPINE</span>
           </h2>
-          <span className="text-[10px] text-text-3 font-mono uppercase tracking-wider">
+          <span className="text-[10px] text-[#75808B] font-mono tracking-wider">
             <span>[Priority order]</span>
             <span className="sr-only">[PRIORITY RANKED]</span>
           </span>
         </div>
-        <span className="font-mono text-[11px] text-text-2 tabular-nums">
+        <span className="font-mono text-[11px] text-[#75808B] tabular-nums">
           <span>{diffItems.length} {diffItems.length === 1 ? 'comparison' : 'comparisons'}</span>
           <span className="sr-only">{diffItems.length} {diffItems.length === 1 ? 'DIFF' : 'DIFFS'}</span>
         </span>
       </div>
 
-      {/* Editorial Annotations List on Shared Plane */}
-      <div className="flex-1 p-2.5 space-y-2 overflow-y-auto">
+      {/* Flagged and Matched Medication Cards List */}
+      <div className="flex-1 p-3 space-y-2.5 overflow-y-auto">
         {diffItems.map((item) => {
           const isActive = activeDiffId === item.diff.diff_id;
           const isDimmed = activeDiffId !== null && !isActive;
@@ -60,15 +69,15 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
                   onSelectDiff(item.diff.diff_id);
                 }
               }}
-              className={`relative flex flex-col p-3 rounded-[5px] border transition-all duration-150 cursor-pointer text-left ${
+              className={`relative flex flex-col p-3.5 rounded-[5px] border transition-all duration-150 cursor-pointer text-left ${
                 isActive
-                  ? 'bg-panel-raised border-[#38BDF8] ring-1 ring-[#38BDF8]'
+                  ? 'bg-[#FAF8F5] border-[#3D5A4C] ring-1 ring-[#3D5A4C] shadow-sm'
                   : isUnchanged
-                    ? 'bg-chrome/60 border-line-dark/70 hover:border-line-dark hover:bg-panel-raised/50 opacity-80'
-                    : 'bg-panel-raised border-line-dark hover:border-line-active hover:bg-[#1C232B]'
-              } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
+                    ? 'bg-[#FAF8F5]/50 border-[#E5E0D8]/70 hover:border-[#E5E0D8] hover:bg-[#FAF8F5]'
+                    : 'bg-white border-[#E5E0D8] hover:border-[#D5CFC5] hover:bg-[#FAF8F5]/40 shadow-xs'
+              } ${isDimmed ? 'opacity-35' : 'opacity-100'}`}
               style={{
-                borderLeftWidth: '2.5px',
+                borderLeftWidth: '3px',
                 borderLeftColor: item.categoryColor,
               }}
             >
@@ -86,10 +95,10 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
                 aria-hidden="true"
               />
 
-              {/* Category Pill & Action Badge */}
+              {/* Category Pill & Restrained Action Badge */}
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <span
-                  className="font-mono text-[10px] font-bold tracking-[0.08em] px-1.5 py-0.5 rounded-[2px] uppercase flex items-center gap-1.5"
+                  className="font-sans text-[11px] font-medium tracking-normal px-2 py-0.5 rounded-[3px] flex items-center gap-1.5"
                   style={{
                     backgroundColor: `color-mix(in srgb, ${item.categoryColor} 12%, transparent)`,
                     color: item.categoryColor,
@@ -100,60 +109,63 @@ export const ReviewSpine: React.FC<ReviewSpineProps> = ({
                     style={{ backgroundColor: item.categoryColor }}
                     aria-hidden="true"
                   />
-                  {item.userFacingCategory}
+                  <span>
+                    <span>{humanReadableCategoryMap[item.userFacingCategory] || item.userFacingCategory}</span>
+                    <span className="sr-only">{item.userFacingCategory}</span>
+                  </span>
                 </span>
 
                 <span
-                  className={`font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded-[2px] uppercase ${
+                  className={`font-mono text-[10px] font-medium px-1.5 py-0.5 rounded-[2px] uppercase ${
                     item.actionBadge === 'CONFIRM'
-                      ? 'border border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/10'
-                      : 'border border-[#34D399]/30 text-[#34D399] bg-[#34D399]/10'
+                      ? 'border border-[#B45309]/30 text-[#B45309] bg-[#FEF3C7]/60'
+                      : 'border border-[#2E6B56]/20 text-[#2E6B56] bg-[#E8EFEA]/60'
                   }`}
                 >
                   {item.actionBadge}
                 </span>
               </div>
 
-              {/* Medicine Name (15-17px sans semibold) */}
-              <h3 className="font-sans text-[15.5px] font-semibold text-text-1 leading-snug mb-1">
+              {/* Medicine Name (16px semibold deep charcoal) */}
+              <h3 className="font-sans text-[16px] font-semibold text-[#1A1D20] leading-snug mb-1">
                 {item.displayName}
               </h3>
 
-              {/* Plain Transformation Statement (13-14px sans) */}
-              <p className="font-sans text-[13px] leading-[18px] text-text-2 mb-2">
+              {/* Transformation Statement */}
+              <p className="font-sans text-[13px] leading-[18.5px] text-[#48525B] mb-2.5">
                 {item.transformationText}
               </p>
 
-              {/* Bottom Metadata: Gutter Markers & Evidence Text Action */}
-              <div className="flex items-center justify-between pt-2 border-t border-line-dark/60 text-[11px] font-mono text-text-3">
+              {/* Bottom Metadata: Gutter Markers & Evidence Interaction */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#E5E0D8]/60 text-[11px] font-mono text-[#75808B]">
                 <div className="flex items-center gap-1.5">
                   {item.beforeMarker && (
-                    <span className="text-text-2">
-                      Before <strong className="text-text-1 font-mono">{item.beforeMarker}</strong>
+                    <span className="text-[#48525B]">
+                      Before <strong className="text-[#1A1D20] font-mono">{item.beforeMarker}</strong>
                     </span>
                   )}
-                  {item.beforeMarker && item.afterMarker && <span className="text-text-3">·</span>}
+                  {item.beforeMarker && item.afterMarker && <span className="text-[#75808B]">·</span>}
                   {item.afterMarker && (
-                    <span className="text-text-2">
-                      After <strong className="text-text-1 font-mono">{item.afterMarker}</strong>
+                    <span className="text-[#48525B]">
+                      After <strong className="text-[#1A1D20] font-mono">{item.afterMarker}</strong>
                     </span>
                   )}
                   {!item.afterMarker && (
-                    <span className="text-[#FB7185] italic">
+                    <span className="text-[#9F1239] font-sans italic text-[11px]">
                       <span>Omitted from discharge</span>
                       <span className="sr-only">OMITTED FROM NEW</span>
                     </span>
                   )}
                   {!item.beforeMarker && (
-                    <span className="text-[#38BDF8] italic">
+                    <span className="text-[#2E6B56] font-sans italic text-[11px]">
                       <span>New in discharge</span>
                       <span className="sr-only">NOT IN PREVIOUS</span>
                     </span>
                   )}
                 </div>
 
-                <span className="text-active hover:underline text-[11px] font-medium flex items-center gap-1">
-                  <span>{item.evidenceCount} {item.evidenceCount === 1 ? 'line' : 'lines'}</span>
+                <span className="text-[#3D5A4C] hover:text-[#243B30] font-sans text-[11.5px] font-medium flex items-center gap-1">
+                  <span>Inspect evidence</span>
                   <span>→</span>
                 </span>
               </div>

@@ -3,60 +3,50 @@
 @tailwind utilities;
 
 :root {
-  /* Deep graphite frame */
-  --canvas: #0B0E10;
-  --chrome: #101417;
-  --panel: #13181C;
-  --panel-raised: #1A2026;
-  --recessed: #080A0C;
+  /* Warm ivory and off-white backgrounds */
+  --canvas: #FAF8F5;
+  --chrome: #FFFFFF;
+  --panel: #FFFFFF;
+  --panel-raised: #F5F2EB;
+  --recessed: #EDE8DF;
 
-  /* Warm luminous paper */
-  --paper: #F3F0E8;
-  --paper-edge: #D8D2C5;
-  --paper-ink: #202326;
-  --paper-muted: #6B7280;
+  /* Paper tokens */
+  --paper: #FFFFFF;
+  --paper-edge: #E5E0D8;
+  --paper-ink: #1A1D20;
+  --paper-muted: #66707A;
 
-  /* Restrained hairlines */
-  --line-dark: rgba(255, 255, 255, 0.075);
-  --line-active: rgba(255, 255, 255, 0.18);
-  --line-paper: #D8D2C5;
+  /* Fine, subtle borders */
+  --line-dark: #E8E3DA;
+  --line-active: #3D5A4C;
+  --line-paper: #E5E0D8;
 
-  /* Text hierarchy */
-  --text: #F3F4F6;
-  --text-2: #9CA3AF;
-  --text-3: #6B7280;
+  /* Deep charcoal typography hierarchy */
+  --text: #1A1D20;
+  --text-2: #48525B;
+  --text-3: #75808B;
 
-  /* Semantic status accents */
-  --active: #38BDF8;
-  --matched: #34D399;
-  --changed: #F59E0B;
-  --stopped: #FB7185;
-  --duplicate: #A78BFA;
-  --uncertain: #94A3B8;
+  /* Muted sage and restrained warm neutral accents */
+  --active: #3D5A4C;
+  --matched: #2E6B56;
+  --changed: #B45309;
+  --stopped: #9F1239;
+  --duplicate: #6B46C1;
+  --uncertain: #526071;
 
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
   background-color: var(--canvas);
   color: var(--text);
 }
 
-/* Subtle radial pool of warm light behind the workbench */
-.radial-light-pool {
-  background: radial-gradient(
-    circle at 50% 35%,
-    rgba(243, 240, 232, 0.035) 0%,
-    rgba(11, 14, 16, 0) 70%
-  );
-}
-
-/* 1-2% static grain overlay */
-.bg-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
-}
-
-/* Restrained physical paper shadow */
+/* Subtle, gentle paper shadow */
 .shadow-paper {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 1px 3px rgba(32, 35, 38, 0.05), 0 1px 2px rgba(32, 35, 38, 0.03);
+}
+
+.shadow-card {
+  box-shadow: 0 2px 6px rgba(32, 35, 38, 0.04), 0 1px 2px rgba(32, 35, 38, 0.02);
 }
 
 /* Tabular numbers for clinical quantities, markers, and metrics */
@@ -64,7 +54,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle 1px press micro-interaction - strictly NO scaling on hover */
+/* Calm, understated 1px press micro-interaction */
 button:active:not(:disabled),
 a:active:not(:disabled) {
   transform: translateY(1px);
@@ -93,7 +83,7 @@ a:active:not(:disabled) {
 @keyframes card-enter {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -102,7 +92,7 @@ a:active:not(:disabled) {
 }
 
 .animate-card-enter {
-  animation: card-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: card-enter 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Reduced motion preference: immediate updates */

@@ -73,7 +73,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
       data-testid="reconciliation-canvas"
     >
       {/* Mobile Segmented Control (Tabs) */}
-      <div className="lg:hidden flex items-center justify-between p-1 mb-2 bg-panel border border-line-dark rounded-[4px] shrink-0">
+      <div className="lg:hidden flex items-center justify-between p-1 mb-2 bg-[#EDE8DF] border border-[#E5E0D8] rounded-[5px] shrink-0">
         {(['before', 'changes', 'after'] as const).map((tab) => {
           const isSelected = mobileTab === tab;
           const label =
@@ -87,10 +87,10 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             <button
               key={tab}
               onClick={() => setMobileTab(tab)}
-              className={`flex-1 min-h-[44px] py-2 px-1 text-center font-mono text-[11px] font-bold uppercase rounded-[3px] transition-colors ${
+              className={`flex-1 min-h-[40px] py-1.5 px-1 text-center font-mono text-[11px] font-medium uppercase rounded-[3px] transition-colors ${
                 isSelected
-                  ? 'bg-active text-[#080A0C] shadow-sm'
-                  : 'text-text-2 hover:text-text-1 hover:bg-panel-raised'
+                  ? 'bg-white text-[#1A1D20] font-semibold shadow-xs'
+                  : 'text-[#75808B] hover:text-[#1A1D20]'
               }`}
               aria-selected={isSelected}
               role="tab"
@@ -172,7 +172,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
         <div className="lg:hidden">
           {/* Dark Scrim */}
           <div
-            className="fixed inset-0 bg-black/75 z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40"
             onClick={handleCloseInspector}
             aria-hidden="true"
             data-testid="mobile-sheet-scrim"
@@ -183,7 +183,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
             role="dialog"
             aria-modal="true"
             aria-label="Evidence Inspector Sheet"
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[78dvh] flex flex-col bg-panel-raised border-t border-line-dark shadow-2xl rounded-t-[8px] pb-[env(safe-area-inset-bottom,16px)] overflow-hidden animate-card-enter"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[78dvh] flex flex-col bg-white border-t border-[#E5E0D8] shadow-2xl rounded-t-[8px] pb-[env(safe-area-inset-bottom,16px)] overflow-hidden animate-card-enter"
             data-testid="mobile-evidence-sheet"
           >
             <EvidenceInspector
