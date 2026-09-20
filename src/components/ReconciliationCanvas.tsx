@@ -15,6 +15,7 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
   const [mobileTab, setMobileTab] = useState<'before' | 'changes' | 'after'>('changes');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   // Active diff is pinned if set, otherwise hovered
   const activeDiffId = pinnedDiffId ?? hoveredDiffId;
@@ -42,14 +43,20 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
   }
 
   const handleSelectDiff = (diffId: string) => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
     setPinnedDiffId((prev) => (prev === diffId ? null : diffId));
   };
 
   const handleCloseInspector = () => {
     setPinnedDiffId(null);
+    // Return focus to the triggering card
+    setTimeout(() => {
+      triggerRef.current?.focus();
+    }, 50);
   };
 
   const handleSelectSourceMention = (mentionId: string, type: 'before' | 'after') => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
     const matchingDiff = model.diffItems.find((d) =>
       type === 'before'
         ? d.diff.before_mention_id === mentionId
@@ -61,9 +68,12 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
   };
 
   return (
-    <div className="w-full flex flex-col flex-1" data-testid="reconciliation-canvas">
+    <div
+      className="w-full flex flex-col flex-1 min-h-0 h-full overflow-hidden"
+      data-testid="reconciliation-canvas"
+    >
       {/* Mobile Segmented Control (Tabs) */}
-      <div className="lg:hidden flex items-center justify-between p-1.5 mb-3 bg-panel border border-line-dark rounded-[4px]">
+      <div className="lg:hidden flex items-center justify-between p-1 mb-2 bg-panel border border-line-dark rounded-[4px] shrink-0">
         {(['before', 'changes', 'after'] as const).map((tab) => {
           const isSelected = mobileTab === tab;
           const label =
@@ -91,10 +101,10 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
         })}
       </div>
 
-      {/* Desktop 3-Column Layout (31% / 38% / 31%) */}
+      {/* 3-Column Layout (31% / 38% / 31%) */}
       <div
         ref={containerRef}
-        className="relative w-full flex-1 flex flex-col lg:flex-row gap-4 items-stretch min-h-[580px]"
+        className="relative w-full flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch h-full overflow-hidden"
       >
         {/* SVG Signature Connector Overlay */}
         <ConnectorLayer
@@ -106,8 +116,8 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
 
         {/* COLUMN 1: BEFORE Source Rail (31%) */}
         <div
-          className={`w-full lg:w-[31%] flex-1 flex flex-col ${
-            mobileTab === 'before' ? 'block' : 'hidden lg:flex'
+          className={`w-full lg:w-[31%] h-full flex flex-col overflow-hidden ${
+            mobileTab === 'before' ? 'flex flex-1' : 'hidden lg:flex'
           }`}
         >
           <SourceRail
@@ -123,8 +133,8 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
 
         {/* COLUMN 2: Central Review Spine (38%) */}
         <div
-          className={`w-full lg:w-[38%] flex-1 flex flex-col z-20 ${
-            mobileTab === 'changes' ? 'block' : 'hidden lg:flex'
+          className={`w-full lg:w-[38%] h-full flex flex-col z-20 overflow-hidden ${
+            mobileTab === 'changes' ? 'flex flex-1' : 'hidden lg:flex'
           }`}
         >
           <ReviewSpine
@@ -135,12 +145,10 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
           />
         </div>
 
-        {/* COLUMN 3: AFTER Source Rail (31%) OR In-Place Evidence Inspector */}
+        {/* COLUMN 3: AFTER Source Rail (31%) OR Desktop In-Place Evidence Inspector */}
         <div
-          className={`w-full lg:w-[31%] flex-1 flex flex-col z-20 ${
-            mobileTab === 'after' || (mobileTab === 'changes' && pinnedDiffId !== null)
-              ? 'block'
-              : 'hidden lg:flex'
+          className={`w-full lg:w-[31%] h-full flex flex-col z-20 overflow-hidden ${
+            mobileTab === 'after' ? 'flex flex-1' : 'hidden lg:flex'
           }`}
         >
           {pinnedDiffId && activeDiffItem ? (
@@ -158,6 +166,34 @@ export const ReconciliationCanvas: React.FC<ReconciliationCanvasProps> = ({ mode
           )}
         </div>
       </div>
+
+      {/* MOBILE BOTTOM SHEET FOR EVIDENCE INSPECTOR */}
+      {pinnedDiffId && activeDiffItem && (
+        <div className="lg:hidden">
+          {/* Dark Scrim */}
+          <div
+            className="fixed inset-0 bg-black/75 z-40"
+            onClick={handleCloseInspector}
+            aria-hidden="true"
+            data-testid="mobile-sheet-scrim"
+          />
+
+          {/* Fixed Bottom Sheet Drawer: max-height 78dvh, safe-area padding */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Evidence Inspector Sheet"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[78dvh] flex flex-col bg-panel-raised border-t border-line-dark shadow-2xl rounded-t-[8px] pb-[env(safe-area-inset-bottom,16px)] overflow-hidden animate-card-enter"
+            data-testid="mobile-evidence-sheet"
+          >
+            <EvidenceInspector
+              item={activeDiffItem}
+              onClose={handleCloseInspector}
+              isMobileSheet
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

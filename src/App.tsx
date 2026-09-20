@@ -4,6 +4,7 @@ import { buildDiffReport } from './engine/diffEngine.js';
 import { createPresentationModel } from './adapters/presentationAdapter.js';
 import { ReconciliationCanvas } from './components/ReconciliationCanvas.js';
 import { PrintHandoff } from './components/PrintHandoff.js';
+import { WarningIcon, PrinterIcon } from './components/Icons.js';
 
 type CaseKey = 'case-a' | 'case-b' | 'case-c';
 
@@ -65,9 +66,9 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white">
+    <div className="h-screen max-h-screen overflow-hidden bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white">
       {/* 44px Compact Top Bar */}
-      <header className="no-print h-[44px] bg-chrome border-b border-line-dark px-4 flex items-center justify-between gap-4 select-none z-30">
+      <header className="no-print h-[44px] bg-chrome border-b border-line-dark px-3 sm:px-4 flex items-center justify-between gap-3 select-none shrink-0 z-30">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-2.5 shrink-0">
           <span className="font-mono text-[13px] font-bold tracking-[0.12em] text-white">
@@ -78,10 +79,11 @@ export function App() {
           </span>
         </div>
 
-        {/* Center: Persistent Clinical Safety Statement */}
+        {/* Center: Persistent Clinical Safety Statement (Desktop) */}
         <div className="hidden md:flex items-center justify-center flex-1 max-w-[640px] text-center">
-          <p className="font-mono text-[11px] text-text-2 tracking-tight line-clamp-1">
-            ⚠️ Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.
+          <p className="font-mono text-[11px] text-text-2 tracking-tight line-clamp-1 flex items-center gap-1.5">
+            <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+            <span>Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.</span>
           </p>
         </div>
 
@@ -96,21 +98,37 @@ export function App() {
             className="min-h-[28px] px-2.5 py-1 text-[11px] font-mono font-medium text-text-1 bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[3px] transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-active"
             title="Open printable medication reconciliation handoff"
           >
-            <span aria-hidden="true">🖨️</span>
+            <PrinterIcon className="w-3.5 h-3.5 text-text-1" />
             <span>PRINT HANDOFF</span>
           </button>
         </div>
       </header>
 
-      {/* Main Workspace */}
-      <main className="no-print flex-1 flex flex-col max-w-[1440px] w-full mx-auto px-3 sm:px-4 py-3 sm:py-3.5 space-y-3">
+      {/* Compact Mobile Safety Strip (Visible on mobile screens) */}
+      <div
+        className="no-print md:hidden bg-[#0D1013] border-b border-line-dark px-3 py-1.5 flex items-center justify-between gap-2 text-[10px] font-mono shrink-0"
+        data-testid="mobile-safety-strip"
+      >
+        <div className="flex items-center gap-1.5 text-text-2 flex-1">
+          <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+          <span className="leading-tight">
+            Do not start, stop, or change medicine based on RxDiff. Confirm with a doctor or pharmacist.
+          </span>
+        </div>
+        <span className="px-1.5 py-0.5 rounded-[2px] bg-panel-raised text-text-3 border border-line-dark uppercase text-[9px] font-bold shrink-0">
+          SYNTHETIC DEMO
+        </span>
+      </div>
+
+      {/* Main Workspace (Strictly fits inside 1440x900 with zero page scroll) */}
+      <main className="no-print flex-1 min-h-0 flex flex-col max-w-[1440px] w-full mx-auto px-3 sm:px-4 py-2 sm:py-2.5 space-y-2 overflow-hidden">
         {/* Compact Entry Area: Title + Terse Case Selectors */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-2 border-b border-line-dark">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-line-dark shrink-0">
           <div>
-            <h1 className="text-[17px] font-bold text-text-1 tracking-tight">
+            <h1 className="text-[16px] font-bold text-text-1 tracking-tight">
               Two lists. One safer conversation.
             </h1>
-            <p className="text-[12px] text-text-2 mt-0.5">
+            <p className="text-[11.5px] text-text-2 mt-0.5">
               Deterministic verification between previous prescription and discharge lists.
             </p>
           </div>
@@ -134,7 +152,7 @@ export function App() {
                   onClick={() => handleSelectCase(c.id as CaseKey)}
                   role="tab"
                   aria-selected={isSelected}
-                  className={`min-h-[32px] px-3 py-1 text-[11.5px] font-mono rounded-[3px] transition-all ${
+                  className={`min-h-[30px] px-2.5 py-1 text-[11px] font-mono rounded-[3px] transition-all ${
                     isSelected
                       ? 'bg-panel-raised text-white font-bold border border-line-active shadow-sm'
                       : 'text-text-3 hover:text-text-2 hover:bg-panel'
@@ -147,12 +165,12 @@ export function App() {
           </div>
         </div>
 
-        {/* 36px Analysis Strip */}
-        <div className="relative h-[36px] bg-panel rounded-[4px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none">
-          {/* Scan line effect during animation */}
+        {/* 34px Analysis Strip with 1px Solid Sky Line - Zero Gradients */}
+        <div className="relative h-[34px] bg-panel rounded-[4px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0">
+          {/* 1px Solid Sky Line during animation - NO GRADIENT */}
           {isAnalyzing && (
             <div
-              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-active/20 to-transparent animate-scan-line pointer-events-none"
+              className="absolute inset-y-0 w-[1px] bg-active animate-scan-line pointer-events-none"
               aria-hidden="true"
             />
           )}

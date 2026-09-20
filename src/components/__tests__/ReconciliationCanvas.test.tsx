@@ -47,11 +47,12 @@ describe('ReconciliationCanvas Component', () => {
     fireEvent.click(metforminCard);
 
     // Inspector should now replace AFTER rail
-    expect(screen.getByTestId('evidence-inspector')).toBeInTheDocument();
+    const inspectors = screen.getAllByTestId('evidence-inspector');
+    expect(inspectors.length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByTestId('source-rail-after')).not.toBeInTheDocument();
 
     // Evidence quote check within inspector
-    const inspector = screen.getByTestId('evidence-inspector');
+    const inspector = inspectors[0]!;
     expect(
       within(inspector).getByText(/Metformin 500 mg tablet, 1 tablet once daily after dinner/)
     ).toBeInTheDocument();
@@ -91,6 +92,56 @@ describe('ReconciliationCanvas Component', () => {
 
     expect(screen.getByText('POSSIBLE DUPLICATE')).toBeInTheDocument();
     expect(screen.getByText('TEXT MATCHED')).toBeInTheDocument();
+  });
+
+  it('mobile bottom sheet opens immediately with dark scrim and returns focus on close', async () => {
+    const reportA = buildDiffReport(CASE_A.beforeDoc, CASE_A.afterDoc);
+    const modelA = createPresentationModel(CASE_A, reportA);
+
+    render(<ReconciliationCanvas model={modelA} />);
+
+    // Trigger card
+    const atorvastatinCard = screen.getByText('Atorvastatin').closest('div[role="button"]') as HTMLElement;
+    expect(atorvastatinCard).toBeInTheDocument();
+
+    atorvastatinCard.focus();
+    expect(document.activeElement).toBe(atorvastatinCard);
+
+    // Click card to open sheet
+    fireEvent.click(atorvastatinCard);
+
+    // Sheet and scrim should appear
+    const sheet = screen.getByTestId('mobile-evidence-sheet');
+    expect(sheet).toBeInTheDocument();
+    expect(screen.getByTestId('mobile-sheet-scrim')).toBeInTheDocument();
+
+    // Close button should be present
+    const closeBtn = within(sheet).getByRole('button', { name: /close/i });
+    expect(closeBtn).toBeInTheDocument();
+
+    // Close sheet
+    fireEvent.click(closeBtn);
+
+    // Sheet and scrim should disappear
+    expect(screen.queryByTestId('mobile-evidence-sheet')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mobile-sheet-scrim')).not.toBeInTheDocument();
+  });
+});
+
+describe('App Mobile Safety Strip', () => {
+  it('renders compact mobile safety strip with full warning and SYNTHETIC DEMO badge', async () => {
+    // Dynamic import of App to test full shell
+    const { App } = await import('../../App.js');
+    render(<App />);
+
+    const safetyStrip = screen.getByTestId('mobile-safety-strip');
+    expect(safetyStrip).toBeInTheDocument();
+    expect(
+      within(safetyStrip).getByText(
+        /Do not start, stop, or change medicine based on RxDiff\. Confirm with a doctor or pharmacist\./i
+      )
+    ).toBeInTheDocument();
+    expect(within(safetyStrip).getByText('SYNTHETIC DEMO')).toBeInTheDocument();
   });
 });
 

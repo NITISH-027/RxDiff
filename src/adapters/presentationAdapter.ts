@@ -174,7 +174,7 @@ export function derivePatientQuestion(
 ): string {
   switch (diff.category) {
     case 'explicitly_stopped':
-      return `Did the doctor intend to permanently stop ${medName}?`;
+      return `Was ${medName} intentionally stopped or held on the new list?`;
     case 'frequency_changed': {
       const a = after?.frequency_per_day
         ? `${after.frequency_per_day} times daily`

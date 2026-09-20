@@ -89,4 +89,28 @@ describe('Presentation Adapter', () => {
     // 4 before, 5 after, 3 to confirm (atorvastatin, metformin, rosuvastatin)
     expect(modelA.summaryText).toBe('4 BEFORE / 5 AFTER / 3 TO CONFIRM');
   });
+
+  it('derives neutral stop question without the word permanently', () => {
+    const q = derivePatientQuestion(
+      'Atorvastatin',
+      {
+        diff_id: 'diff-1',
+        before_mention_id: 'b1',
+        after_mention_id: 'a1',
+        match_basis: 'exact_name',
+        match_confidence: 1,
+        category: 'explicitly_stopped',
+        changed_fields: ['status'],
+        explanation: 'stopped',
+        before_evidence: 'Atorvastatin 10 mg',
+        after_evidence: 'STOP Atorvastatin 10 mg',
+        review_required: true,
+      },
+      null,
+      null
+    );
+
+    expect(q).toBe('Was Atorvastatin intentionally stopped or held on the new list?');
+    expect(q.toLowerCase()).not.toContain('permanently');
+  });
 });

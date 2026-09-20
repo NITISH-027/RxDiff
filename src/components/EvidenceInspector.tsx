@@ -1,12 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { PresentationDiffItem } from '../adapters/presentationAdapter.js';
+import { WarningIcon, CloseIcon } from './Icons.js';
 
 interface EvidenceInspectorProps {
   item: PresentationDiffItem;
   onClose: () => void;
+  isMobileSheet?: boolean;
 }
 
-export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({ item, onClose }) => {
+export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
+  item,
+  onClose,
+  isMobileSheet = false,
+}) => {
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-focus the close button in mobile sheet for accessible focus trapping
+  useEffect(() => {
+    if (isMobileSheet && closeBtnRef.current) {
+      closeBtnRef.current.focus();
+    }
+  }, [isMobileSheet]);
+
   // Listen for Escape key to cleanly restore the rail
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -20,11 +35,20 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({ item, onCl
 
   return (
     <div
-      className="flex flex-col h-full bg-panel-raised border border-line-dark rounded-[4px] shadow-lg overflow-hidden animate-card-enter"
+      className={`flex flex-col h-full bg-panel-raised border border-line-dark shadow-lg overflow-hidden animate-card-enter ${
+        isMobileSheet ? 'rounded-t-[8px]' : 'rounded-[4px]'
+      }`}
       data-testid="evidence-inspector"
     >
+      {/* Mobile Drawer Handle Pill */}
+      {isMobileSheet && (
+        <div className="pt-2 pb-1 flex justify-center bg-[#1A2027]" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-text-3/40" />
+        </div>
+      )}
+
       {/* Inspector Header with close affordance */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-line-dark bg-[#1A2027]">
+      <div className="flex items-center justify-between px-3.5 py-2 border-b border-line-dark bg-[#1A2027] shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[11px] font-bold tracking-[0.10em] text-active uppercase">
             EVIDENCE INSPECTOR
@@ -35,12 +59,23 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({ item, onCl
         </div>
 
         <button
+          ref={closeBtnRef}
           onClick={onClose}
-          className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono text-text-2 hover:text-white bg-[#0D1013] hover:bg-[#222830] border border-line-dark rounded-[3px] transition-colors focus-visible:ring-1 focus-visible:ring-active"
+          className="min-h-[32px] min-w-[32px] flex items-center justify-center gap-1.5 px-2.5 py-1 text-[11px] font-mono text-text-2 hover:text-white bg-[#0D1013] hover:bg-[#222830] active:translate-y-[1px] border border-line-dark rounded-[3px] transition-colors focus-visible:ring-2 focus-visible:ring-active"
           title="Restore source rail (Escape)"
+          aria-label={isMobileSheet ? 'Close evidence sheet' : 'Restore source rail'}
         >
-          <span>VIEW ORIGINAL</span>
-          <kbd className="text-[9px] bg-panel px-1 py-0.5 rounded text-text-3 border border-line-dark">ESC</kbd>
+          {isMobileSheet ? (
+            <>
+              <CloseIcon className="w-3.5 h-3.5" />
+              <span>CLOSE</span>
+            </>
+          ) : (
+            <>
+              <span>VIEW ORIGINAL</span>
+              <kbd className="text-[9px] bg-panel px-1 py-0.5 rounded text-text-3 border border-line-dark">ESC</kbd>
+            </>
+          )}
         </button>
       </div>
 
@@ -162,8 +197,9 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({ item, onCl
 
         {/* Safety Disclaimer */}
         <div className="pt-2 border-t border-line-dark">
-          <p className="font-mono text-[11px] text-text-3 italic leading-[16px]">
-            ⚠️ Confirm this interpretation with a doctor or pharmacist. RxDiff never changes prescriptions.
+          <p className="font-mono text-[11px] text-text-3 italic leading-[16px] flex items-center gap-1.5">
+            <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+            <span>Confirm this interpretation with a doctor or pharmacist. RxDiff never changes prescriptions.</span>
           </p>
         </div>
       </div>

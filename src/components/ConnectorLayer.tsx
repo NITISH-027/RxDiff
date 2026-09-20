@@ -13,7 +13,7 @@ interface PathSegment {
   d: string;
   midX: number;
   midY: number;
-  isRightSegment?: boolean;
+  gutter: 'left' | 'right';
 }
 
 export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
@@ -39,7 +39,7 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
       const diffLeftX = diffLeftRect.left - containerRect.left;
       const diffLeftY = diffLeftRect.top + diffLeftRect.height / 2 - containerRect.top;
 
-      // 1. BEFORE Row -> Diff Left Anchor
+      // 1. LEFT GUTTER: BEFORE Row right edge -> Diff card left edge
       if (item.beforeMention) {
         const beforeEl = document.getElementById(`before-${item.beforeMention.mention_id}`);
         if (beforeEl) {
@@ -58,11 +58,13 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
             d: `M ${startX} ${startY} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${diffLeftX} ${diffLeftY}`,
             midX: (startX + diffLeftX) / 2,
             midY: (startY + diffLeftY) / 2,
+            gutter: 'left',
           });
         }
       }
 
-      // 2. Diff Right Anchor -> AFTER Row (only if inspector is not replacing AFTER rail)
+      // 2. RIGHT GUTTER: Diff card right edge -> AFTER Row left edge
+      // Only draw when AFTER mention exists AND inspector is not replacing the rail
       if (item.afterMention && diffRightEl && !inspectorOpen) {
         const diffRightRect = diffRightEl.getBoundingClientRect();
         const startX = diffRightRect.right - containerRect.left;
@@ -85,7 +87,7 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
             d: `M ${startX} ${startY} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${endX} ${endY}`,
             midX: (startX + endX) / 2,
             midY: (startY + endY) / 2,
-            isRightSegment: true,
+            gutter: 'right',
           });
         }
       }
@@ -95,10 +97,8 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
   }, [containerRef, diffItems, inspectorOpen]);
 
   useEffect(() => {
-    // Initial measurement
     calculatePaths();
 
-    // Re-measure on resize or layout changes
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
       ro = new ResizeObserver(() => {
@@ -107,16 +107,16 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
       ro.observe(containerRef.current);
     }
 
+    // Capture scroll events from internal scrolling containers (SourceRail, ReviewSpine)
+    window.addEventListener('scroll', calculatePaths, true);
     window.addEventListener('resize', calculatePaths);
-    window.addEventListener('scroll', calculatePaths);
 
-    // Double frame check for font rendering or layout settling
     const rafId = requestAnimationFrame(calculatePaths);
 
     return () => {
       ro?.disconnect();
+      window.removeEventListener('scroll', calculatePaths, true);
       window.removeEventListener('resize', calculatePaths);
-      window.removeEventListener('scroll', calculatePaths);
       cancelAnimationFrame(rafId);
     };
   }, [calculatePaths, containerRef]);
@@ -132,18 +132,19 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
         const isDimmed = activeDiffId !== null && !isActive;
 
         return (
-          <g key={`${seg.diffId}-${idx}`}>
+          <g key={`${seg.diffId}-${seg.gutter}-${idx}`}>
+            {/* Connector Path */}
             <path
               d={seg.d}
               fill="none"
-              stroke={isActive ? '#38BDF8' : 'rgba(255, 255, 255, 0.12)'}
-              strokeWidth={isActive ? 2 : 1}
-              strokeOpacity={isDimmed ? 0.05 : isActive ? 1 : 0.4}
-              strokeDasharray={isActive ? 'none' : '3 3'}
+              stroke={isActive ? '#38BDF8' : 'rgba(255, 255, 255, 0.22)'}
+              strokeWidth={isActive ? 2 : 1.25}
+              strokeOpacity={isDimmed ? 0.08 : isActive ? 1 : 0.75}
+              strokeDasharray={isActive ? 'none' : '4 3'}
               className="transition-all duration-200"
             />
 
-            {/* Tiny TRACE pill on the active connector */}
+            {/* Tiny TRACE pill on the active connector in gutter */}
             {isActive && (
               <g transform={`translate(${seg.midX - 18}, ${seg.midY - 8})`}>
                 <rect
