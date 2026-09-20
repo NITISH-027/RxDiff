@@ -110,7 +110,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
     }
   }, [onInspectEvidence]);
 
-  // Helper to draw image onto canvas with cover aspect ratio, 1.05x visual crop cap, DPR capped at 1.5, and high quality smoothing
+  // Helper to draw image onto canvas with cover aspect ratio & DPR capped at 1.5
   const drawFrameCover = useCallback((canvas: HTMLCanvasElement, img: HTMLImageElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -120,36 +120,39 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
     const displayHeight = canvas.clientHeight;
     if (!displayWidth || !displayHeight) return;
 
-    const targetBitmapWidth = Math.floor(displayWidth * dpr);
-    const targetBitmapHeight = Math.floor(displayHeight * dpr);
+    const targetWidth = Math.floor(displayWidth * dpr);
+    const targetHeight = Math.floor(displayHeight * dpr);
 
-    if (canvas.width !== targetBitmapWidth || canvas.height !== targetBitmapHeight) {
-      canvas.width = targetBitmapWidth;
-      canvas.height = targetBitmapHeight;
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
     }
-
-    // Scale drawing context to match DPR
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // High quality bicubic scaling
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
 
     const imgW = img.naturalWidth || img.width;
     const imgH = img.naturalHeight || img.height;
     if (!imgW || !imgH) return;
 
-    // Cover geometry in CSS pixels with visual crop capped at 1.05x (letterbox-safe rather than aggressive zoom)
-    const fitScale = Math.min(displayWidth / imgW, displayHeight / imgH);
-    const coverScale = Math.max(displayWidth / imgW, displayHeight / imgH);
-    const effectiveScale = Math.min(coverScale, fitScale * 1.05);
+    const canvasAspect = targetWidth / targetHeight;
+    const imgAspect = imgW / imgH;
 
-    const rW = imgW * effectiveScale;
-    const rH = imgH * effectiveScale;
-    const oX = (displayWidth - rW) / 2;
-    const oY = (displayHeight - rH) / 2;
+    let rW: number;
+    let rH: number;
+    let oX: number;
+    let oY: number;
 
-    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    if (canvasAspect > imgAspect) {
+      rW = targetWidth;
+      rH = targetWidth / imgAspect;
+      oX = 0;
+      oY = (targetHeight - rH) / 2;
+    } else {
+      rH = targetHeight;
+      rW = targetHeight * imgAspect;
+      oX = (targetWidth - rW) / 2;
+      oY = 0;
+    }
+
+    ctx.clearRect(0, 0, targetWidth, targetHeight);
     ctx.drawImage(img, oX, oY, rW, rH);
   }, []);
 
@@ -610,11 +613,8 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               style={{ opacity: 0 }}
             />
 
-            {/* Static dark overlay at 10% opacity (8-12% range) to hide compression inconsistency and improve text contrast */}
-            <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-
-            {/* Subtle 1px inner edge framing the cinematic viewport */}
-            <div className="absolute inset-0 pointer-events-none border border-white/[0.08] z-10" />
+            {/* Dark Vignette Overlay */}
+            <div className="absolute inset-0 bg-black/40 pointer-events-none" />
           </div>
 
           {/* STAGE A (0-20%): Hero Headline & Support */}
