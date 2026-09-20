@@ -49,6 +49,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
   const connectorRightPathRef = useRef<SVGPathElement | null>(null);
   const contextCopyRef = useRef<HTMLSpanElement | null>(null);
   const contextStepRef = useRef<HTMLSpanElement | null>(null);
+  const stepIndicator1Ref = useRef<HTMLDivElement | null>(null);
+  const stepIndicator2Ref = useRef<HTMLDivElement | null>(null);
+  const stepIndicator3Ref = useRef<HTMLDivElement | null>(null);
   const stageContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Frame Cache: Map<frameIndex, HTMLImageElement> for each scene
@@ -406,7 +409,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
           connectorRightPathRef.current.style.strokeDashoffset = String(rightOffset);
         }
 
-        // 7. Context Copy and Step text updates
+        // 7. Context Copy, Step text, and Narrative Timeline Spine updates
         if (contextCopyRef.current && contextStepRef.current) {
           if (progress < 0.42) {
             contextCopyRef.current.textContent = 'Two lists can look almost the same.';
@@ -417,6 +420,23 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
           } else {
             contextCopyRef.current.textContent = 'See what changed. Know what to ask.';
             contextStepRef.current.textContent = 'Step 03: Clinical Review';
+          }
+        }
+
+        // Timeline Spine active highlights
+        if (stepIndicator1Ref.current && stepIndicator2Ref.current && stepIndicator3Ref.current) {
+          if (progress < 0.42) {
+            stepIndicator1Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#38BDF8] text-[#38BDF8] transition-all duration-300';
+            stepIndicator2Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-white/10 text-white/40 transition-all duration-300';
+            stepIndicator3Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-white/10 text-white/40 transition-all duration-300';
+          } else if (progress < 0.84) {
+            stepIndicator1Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#38BDF8]/40 text-[#38BDF8]/60 transition-all duration-300';
+            stepIndicator2Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#B45309] text-[#FBBF24] transition-all duration-300';
+            stepIndicator3Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-white/10 text-white/40 transition-all duration-300';
+          } else {
+            stepIndicator1Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#38BDF8]/40 text-[#38BDF8]/60 transition-all duration-300';
+            stepIndicator2Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#B45309]/40 text-[#FBBF24]/60 transition-all duration-300';
+            stepIndicator3Ref.current.className = 'flex items-center gap-2 pb-1.5 border-b-2 border-[#2E6B56] text-[#34D399] transition-all duration-300';
           }
         }
 
@@ -626,7 +646,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
             />
           </div>
 
-          {/* STAGE A (0-20%): Hero Headline & Support */}
+          {/* STAGE A (0-20%): Hero Headline, Dossier Label, Document Chips, and Scroll Guide */}
           <div
             ref={heroRef}
             className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-6 transition-opacity duration-200"
@@ -636,15 +656,52 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               willChange: 'opacity, transform',
             }}
           >
-            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#38BDF8] bg-[#38BDF8]/10 px-2.5 py-1 rounded-[3px] border border-[#38BDF8]/20 mb-3">
-              Clinical Evidence Transformation
-            </span>
-            <h1 className="font-serif text-[clamp(28px,3.8vw,48px)] font-normal text-white max-w-[760px] leading-[1.15] tracking-tight">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#38BDF8] bg-[#38BDF8]/10 px-3 py-1 rounded-[3px] border border-[#38BDF8]/20">
+                Clinical Evidence Transformation // Vol. 01
+              </span>
+            </div>
+
+            <h1 className="font-serif text-[clamp(28px,3.8vw,52px)] font-normal text-white max-w-[820px] leading-[1.14] tracking-tight">
               The important changes can hide between two lists.
             </h1>
-            <p className="font-sans text-[clamp(14px,1.5vw,17px)] text-white/75 mt-3 max-w-[560px] leading-relaxed">
+
+            <p className="font-sans text-[clamp(14px,1.5vw,17px)] text-white/75 mt-3.5 max-w-[560px] leading-relaxed">
               RxDiff reveals what changed and links every flag back to its source.
             </p>
+
+            {/* Document Citation Chips anchored to the physical papers on desk */}
+            <div className="hidden md:flex items-center justify-between w-full max-w-[940px] mt-8 px-4 pointer-events-none opacity-85">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-black/60 border border-white/15 backdrop-blur-md text-[11px] font-mono text-white/80 shadow-lg">
+                <span className="text-[#38BDF8] font-bold">✦ DOC A</span>
+                <span className="text-white/30">|</span>
+                <span>Home Prescriptions · 4 Active Rx</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-black/60 border border-white/15 backdrop-blur-md text-[11px] font-mono text-white/80 shadow-lg">
+                <span className="text-[#2E6B56] font-bold">✦ DOC B</span>
+                <span className="text-white/30">|</span>
+                <span>Hospital Discharge Order · Room 412</span>
+              </div>
+            </div>
+
+            {/* Delicate Scroll Guide */}
+            <div className="mt-9 flex flex-col items-center gap-2 text-white/40 font-mono text-[10px] tracking-widest uppercase">
+              <span>Scroll to inspect discrepancy</span>
+              <div className="w-[1px] h-6 bg-gradient-to-b from-white/60 to-transparent animate-bounce" />
+            </div>
+          </div>
+
+          {/* Subtle Corner Metadata Coordinates (Light Table Frame) */}
+          <div className="hidden lg:flex absolute bottom-4 left-6 z-30 items-center gap-3 text-[10px] font-mono tracking-wider text-white/35 pointer-events-none">
+            <span>INPUT: 01 HOME RX + 02 DISCHARGE ORDER</span>
+            <span>•</span>
+            <span>AUDIT REVISION 4.2</span>
+          </div>
+
+          <div className="hidden lg:flex absolute bottom-4 right-6 z-30 items-center gap-2 text-[10px] font-mono tracking-wider text-white/35 pointer-events-none">
+            <span>DETERMINISTIC VERIFICATION</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2E6B56]" />
           </div>
 
           {/* STAGE B, C, D (20-100%): The 3-Column Materialization Stage */}
@@ -657,21 +714,60 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               willChange: 'transform, opacity',
             }}
           >
-            {/* Context Copy Bar */}
-            <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2 transition-colors duration-200">
-              <span
-                ref={contextCopyRef}
-                className="font-serif text-[18px] tracking-tight text-[#EDEDED] transition-colors duration-200"
-              >
-                Two lists can look almost the same.
-              </span>
+            {/* Unified Narrative Timeline Spine (Steps 01 - 03) */}
+            <div className="mb-4 flex flex-col gap-2.5">
+              <div className="grid grid-cols-3 gap-3 items-center">
+                <div
+                  ref={stepIndicator1Ref}
+                  className="flex items-center gap-2 pb-1.5 border-b-2 border-[#38BDF8] text-[#38BDF8] transition-all duration-300"
+                >
+                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#38BDF8]/15 border border-[#38BDF8]/30">
+                    01
+                  </span>
+                  <span className="font-mono text-[10.5px] uppercase tracking-wider truncate">
+                    Two Lists
+                  </span>
+                </div>
+                <div
+                  ref={stepIndicator2Ref}
+                  className="flex items-center gap-2 pb-1.5 border-b-2 border-white/10 text-white/40 transition-all duration-300"
+                >
+                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                    02
+                  </span>
+                  <span className="font-mono text-[10.5px] uppercase tracking-wider truncate">
+                    Discrepancy
+                  </span>
+                </div>
+                <div
+                  ref={stepIndicator3Ref}
+                  className="flex items-center gap-2 pb-1.5 border-b-2 border-white/10 text-white/40 transition-all duration-300"
+                >
+                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                    03
+                  </span>
+                  <span className="font-mono text-[10.5px] uppercase tracking-wider truncate">
+                    Provenance Link
+                  </span>
+                </div>
+              </div>
 
-              <span
-                ref={contextStepRef}
-                className="font-mono text-[11px] uppercase tracking-wider text-white/50 transition-colors duration-200"
-              >
-                Step 01: Identification
-              </span>
+              {/* Context Headline Row */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-2 transition-colors duration-200">
+                <span
+                  ref={contextCopyRef}
+                  className="font-serif text-[18px] tracking-tight text-[#EDEDED] transition-colors duration-200"
+                >
+                  Two lists can look almost the same.
+                </span>
+
+                <span
+                  ref={contextStepRef}
+                  className="font-mono text-[11px] uppercase tracking-wider text-white/50 transition-colors duration-200"
+                >
+                  Step 01: Identification
+                </span>
+              </div>
             </div>
 
             {/* 3-Column Spatial Grid */}
@@ -709,13 +805,16 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
                 </g>
               </svg>
 
-              {/* LEFT COLUMN: 01 Previous List */}
-              <div className="col-span-4 p-4 rounded-[6px] border border-white/10 bg-[#0F1012]/85 transition-all duration-300">
+              {/* LEFT COLUMN: 01 Previous List (Frosted Light-Table Slip) */}
+              <div className="col-span-4 p-4 rounded-[8px] border border-white/15 bg-[#0A0D0F]/65 backdrop-blur-md shadow-2xl transition-all duration-300">
                 <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-white/10">
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EDEDED]">
-                    01 Previous Prescriptions
-                  </span>
-                  <span className="font-mono text-[10px] text-white/50">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#38BDF8] font-mono font-bold">+</span>
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EDEDED]">
+                      01 Previous Prescriptions
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">
                     Home List
                   </span>
                 </div>
@@ -726,7 +825,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
                       key={line.id}
                       className={`p-2 rounded-[4px] border text-[11.5px] font-sans transition-all duration-200 ${
                         line.active
-                          ? 'bg-[#2E6B56]/20 border-[#2E6B56]/50 text-white font-medium shadow-sm'
+                          ? 'bg-[#2E6B56]/25 border-[#2E6B56]/60 text-white font-medium shadow-sm'
                           : 'bg-transparent border-transparent text-white/60'
                       }`}
                     >
@@ -743,13 +842,12 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <div className="col-span-4 flex flex-col justify-center">
                 <div
                   ref={diffCardRef}
-                  className="relative p-4 rounded-[6px] border border-[#B45309]/60 bg-[#0F1012]/95 transition-all duration-300"
+                  className="relative p-4 rounded-[8px] border border-[#B45309]/60 bg-[#0F1012]/85 backdrop-blur-md shadow-[0_0_30px_rgba(180,83,9,0.2)] transition-all duration-300"
                   style={{
                     opacity: 0.01,
                     pointerEvents: 'none',
                     borderLeftWidth: '4px',
                     borderLeftColor: '#B45309',
-                    boxShadow: '0 0 20px rgba(180,83,9,0.15)',
                     willChange: 'transform, opacity',
                   }}
                 >
@@ -796,13 +894,16 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: 02 Discharge Regimen */}
-              <div className="col-span-4 p-4 rounded-[6px] border border-white/10 bg-[#0F1012]/85 transition-all duration-300">
+              {/* RIGHT COLUMN: 02 Discharge Regimen (Frosted Light-Table Slip) */}
+              <div className="col-span-4 p-4 rounded-[8px] border border-white/15 bg-[#0A0D0F]/65 backdrop-blur-md shadow-2xl transition-all duration-300">
                 <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-white/10">
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EDEDED]">
-                    02 Discharge Orders
-                  </span>
-                  <span className="font-mono text-[10px] text-white/50">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#2E6B56] font-mono font-bold">+</span>
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#EDEDED]">
+                      02 Discharge Orders
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">
                     Hospital Orders
                   </span>
                 </div>
@@ -813,7 +914,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
                       key={line.id}
                       className={`p-2 rounded-[4px] border text-[11.5px] font-sans transition-all duration-200 ${
                         line.active
-                          ? 'bg-[#2E6B56]/20 border-[#2E6B56]/50 text-white font-medium shadow-sm'
+                          ? 'bg-[#2E6B56]/25 border-[#2E6B56]/60 text-white font-medium shadow-sm'
                           : 'bg-transparent border-transparent text-white/60'
                       }`}
                     >
