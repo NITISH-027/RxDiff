@@ -113,4 +113,82 @@ describe('Presentation Adapter', () => {
     expect(q).toBe('Was Atorvastatin intentionally stopped or held on the new list?');
     expect(q.toLowerCase()).not.toContain('permanently');
   });
+
+  it('derives unchanged-item handoff question: Does {medicine} and this regimen match the intended current list?', () => {
+    const q = derivePatientQuestion(
+      'Pantoprazole',
+      {
+        diff_id: 'diff-p',
+        before_mention_id: 'b-p',
+        after_mention_id: 'a-p',
+        match_basis: 'exact_name',
+        match_confidence: 1,
+        category: 'unchanged',
+        changed_fields: [],
+        explanation: 'unchanged',
+        before_evidence: 'Pantoprazole 40 mg',
+        after_evidence: 'Pantoprazole 40 mg',
+        review_required: true,
+      },
+      null,
+      null
+    );
+
+    expect(q).toBe('Does Pantoprazole and this regimen match the intended current list?');
+  });
+
+  it('verifies question templates do not begin with Continue/Start/Stop/Take/Hold', () => {
+    const categories: Array<{
+      category:
+        | 'unchanged'
+        | 'explicitly_stopped'
+        | 'frequency_changed'
+        | 'strength_changed'
+        | 'dose_changed'
+        | 'route_changed'
+        | 'started'
+        | 'possible_duplicate'
+        | 'needs_confirmation';
+      before: boolean;
+      after: boolean;
+    }> = [
+      { category: 'unchanged', before: true, after: true },
+      { category: 'explicitly_stopped', before: true, after: true },
+      { category: 'frequency_changed', before: true, after: true },
+      { category: 'strength_changed', before: true, after: true },
+      { category: 'dose_changed', before: true, after: true },
+      { category: 'route_changed', before: true, after: true },
+      { category: 'started', before: false, after: true },
+      { category: 'possible_duplicate', before: true, after: true },
+      { category: 'needs_confirmation', before: true, after: false },
+      { category: 'needs_confirmation', before: false, after: false },
+    ];
+
+    const prohibitedRegex = /^(continue|start|stop|take|hold)\b/i;
+
+    for (const { category, before, after } of categories) {
+      const q = derivePatientQuestion(
+        'Metformin',
+        {
+          diff_id: 'd-test',
+          before_mention_id: before ? 'b1' : null,
+          after_mention_id: after ? 'a1' : null,
+          match_basis: 'exact_name',
+          match_confidence: 1,
+          category,
+          changed_fields: [],
+          explanation: 'test',
+          before_evidence: 'Metformin',
+          after_evidence: 'Metformin',
+          review_required: true,
+        },
+        before ? ({} as unknown as import('../../types/medication.js').MedicationMention) : null,
+        after ? ({} as unknown as import('../../types/medication.js').MedicationMention) : null
+      );
+
+      expect(prohibitedRegex.test(q)).toBe(false);
+      expect(q.toLowerCase()).not.toContain('as prescribed');
+      expect(q.endsWith('?')).toBe(true);
+    }
+  });
 });

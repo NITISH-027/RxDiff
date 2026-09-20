@@ -119,9 +119,6 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
           <div>
             <div className="flex items-center justify-between text-[11px] font-mono text-text-3 mb-1">
               <span>01 BEFORE EVIDENCE {item.beforeMarker ? `[${item.beforeMarker}]` : ''}</span>
-              {item.beforeMention && (
-                <span className="tabular-nums">Conf: {(item.beforeMention.confidence * 100).toFixed(0)}%</span>
-              )}
             </div>
 
             {item.beforeMention ? (
@@ -139,9 +136,6 @@ export const EvidenceInspector: React.FC<EvidenceInspectorProps> = ({
           <div>
             <div className="flex items-center justify-between text-[11px] font-mono text-text-3 mb-1">
               <span>02 AFTER EVIDENCE {item.afterMarker ? `[${item.afterMarker}]` : ''}</span>
-              {item.afterMention && (
-                <span className="tabular-nums">Conf: {(item.afterMention.confidence * 100).toFixed(0)}%</span>
-              )}
             </div>
 
             {item.afterMention ? (

@@ -99,6 +99,7 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
               <tr className="border-b border-gray-400 text-left bg-gray-50 font-mono text-[8.5pt]">
                 <th className="p-1.5">Medication</th>
                 <th className="p-1.5">Regimen Details</th>
+                <th className="p-1.5">Confirmation Question</th>
                 <th className="p-1.5">Source Evidence Line</th>
               </tr>
             </thead>
@@ -109,7 +110,10 @@ export const PrintHandoff: React.FC<PrintHandoffProps> = ({ model }) => {
                   <tr key={item.diff.diff_id} className="border-b border-gray-200">
                     <td className="p-1.5 font-semibold">{item.displayName}</td>
                     <td className="p-1.5 font-mono text-gray-700">
-                      {item.beforeMention?.frequency_raw ?? 'As prescribed'}
+                      {item.beforeMention?.frequency_raw ?? 'Recorded regimen'}
+                    </td>
+                    <td className="p-1.5 font-medium text-black">
+                      &ldquo;{item.patientQuestion}&rdquo;
                     </td>
                     <td className="p-1.5 font-mono text-gray-600 text-[8.5pt]">
                       &ldquo;{item.beforeMention?.evidence_quote ?? item.afterMention?.evidence_quote}&rdquo;

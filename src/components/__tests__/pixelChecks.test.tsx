@@ -43,7 +43,7 @@ describe('Pixel & Layout Requirements Verification', () => {
     expect(inspectors.length).toBeGreaterThanOrEqual(1);
 
     // Explanation and neutral question are visible
-    expect(within(inspectors[0]!).getByText(/Should I take Metformin/i)).toBeInTheDocument();
+    expect(within(inspectors[0]!).getByText(/Is the new frequency of Metformin/i)).toBeInTheDocument();
 
     // Close via VIEW ORIGINAL
     const closeBtns = screen.getAllByRole('button', { name: /restore source rail/i });

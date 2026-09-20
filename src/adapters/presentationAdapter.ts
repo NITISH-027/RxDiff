@@ -173,33 +173,33 @@ export function derivePatientQuestion(
   after: MedicationMention | null
 ): string {
   switch (diff.category) {
+    case 'unchanged':
+      return `Does ${medName} and this regimen match the intended current list?`;
     case 'explicitly_stopped':
       return `Was ${medName} intentionally stopped or held on the new list?`;
     case 'frequency_changed': {
       const a = after?.frequency_per_day
         ? `${after.frequency_per_day} times daily`
         : (after?.frequency_raw ?? 'the new frequency');
-      return `Should I take ${medName} ${a} now?`;
+      return `Is the new frequency of ${medName} (${a}) intended on the current list?`;
     }
     case 'strength_changed': {
       const a = `${after?.strength_value ?? ''} ${after?.strength_unit ?? ''}`.trim();
-      return `Is the new dose strength of ${medName} (${a}) correct?`;
+      return `Is the new dose strength of ${medName} (${a}) intended on the current list?`;
     }
     case 'dose_changed':
-      return `Should my dose quantity of ${medName} change as listed?`;
+      return `Is the listed dose quantity of ${medName} intended on the current list?`;
     case 'route_changed':
-      return `Should the administration route of ${medName} change?`;
+      return `Is the listed administration route of ${medName} intended on the current list?`;
     case 'started':
-      return `Am I supposed to begin taking new medication ${medName}?`;
+      return `Is ${medName} intended as a new addition to the current list?`;
     case 'possible_duplicate':
-      return `Should I be taking both orders for ${medName}, or is one an extra order?`;
+      return `Are both orders for ${medName} intended on the current list, or is one order redundant?`;
     case 'needs_confirmation':
       if (before && !after) {
-        return `Should I stop taking ${medName}, or was it accidentally omitted from my new list?`;
+        return `Was ${medName} intentionally discontinued, or was it omitted from the new list?`;
       }
-      return `Could you clarify the instructions for ${medName}?`;
-    case 'unchanged':
-      return `Continue ${medName} as prescribed.`;
+      return `Could you clarify the intended order for ${medName} on the current list?`;
   }
 }
 
