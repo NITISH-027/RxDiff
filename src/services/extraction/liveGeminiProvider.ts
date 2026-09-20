@@ -6,6 +6,15 @@ import type {
   LiveExtractionResult,
 } from './types.js';
 
+const SAFE_CLIENT_ERROR_MESSAGES: Record<string, string> = {
+  METHOD_NOT_ALLOWED: 'The requested action is not supported. Please use the upload form.',
+  INVALID_IMAGE: 'Please upload exactly one BEFORE image and one AFTER image (JPEG, PNG, or WebP under 5 MB each).',
+  EXTRACTION_NOT_CONFIGURED: 'The extraction service is currently not configured. Please try again later or use demo cases.',
+  MODEL_TIMEOUT: 'The extraction request timed out. Please retry with clearer or smaller images.',
+  PROVIDER_ERROR: 'The extraction service encountered an error. No medication comparison was produced.',
+  INVALID_EXTRACTION: 'The images could not be extracted reliably. No medication comparison was produced.',
+};
+
 export class LiveGeminiProvider implements ExtractionProvider {
   readonly id = 'live-gemini';
   readonly name = 'Live Gemini 3.6 Flash Extraction';
@@ -34,18 +43,37 @@ export class LiveGeminiProvider implements ExtractionProvider {
       });
 
       if (!response.ok) {
-        let errorMsg = `Server error (HTTP ${response.status}). No medication comparison was produced.`;
+        let code: string | undefined;
         let reqId: string | undefined;
         try {
           const errJson = await response.json();
-          if (errJson.error) errorMsg = errJson.error;
-          if (errJson.request_id) reqId = errJson.request_id;
+          if (errJson && typeof errJson.code === 'string') {
+            code = errJson.code;
+          }
+          if (errJson && typeof errJson.request_id === 'string') {
+            reqId = errJson.request_id;
+          }
         } catch {
-          // Fallback to text status
+          // Response body was not JSON
         }
+
+        const errorMsg =
+          code && SAFE_CLIENT_ERROR_MESSAGES[code]
+            ? SAFE_CLIENT_ERROR_MESSAGES[code]
+            : response.status === 422
+              ? SAFE_CLIENT_ERROR_MESSAGES.INVALID_EXTRACTION
+              : response.status === 503
+                ? SAFE_CLIENT_ERROR_MESSAGES.EXTRACTION_NOT_CONFIGURED
+                : response.status === 400
+                  ? SAFE_CLIENT_ERROR_MESSAGES.INVALID_IMAGE
+                  : response.status === 504
+                    ? SAFE_CLIENT_ERROR_MESSAGES.MODEL_TIMEOUT
+                    : 'The extraction service encountered an error. No medication comparison was produced.';
+
         return {
           success: false,
           error: errorMsg,
+          code,
           requestId: reqId,
         };
       }
@@ -58,7 +86,8 @@ export class LiveGeminiProvider implements ExtractionProvider {
       if (!data.before || !data.after || !data.extraction_metadata) {
         return {
           success: false,
-          error: 'Malformed extraction payload received from server. No medication comparison was produced.',
+          error: SAFE_CLIENT_ERROR_MESSAGES.INVALID_EXTRACTION,
+          code: 'INVALID_EXTRACTION',
         };
       }
 
@@ -69,7 +98,8 @@ export class LiveGeminiProvider implements ExtractionProvider {
       if (!beforeParsed.success || !afterParsed.success) {
         return {
           success: false,
-          error: 'Extracted documents failed client schema validation. No medication comparison was produced.',
+          error: SAFE_CLIENT_ERROR_MESSAGES.INVALID_EXTRACTION,
+          code: 'INVALID_EXTRACTION',
           requestId: data.extraction_metadata?.request_id,
         };
       }
@@ -102,10 +132,7 @@ export class LiveGeminiProvider implements ExtractionProvider {
 
       return {
         success: false,
-        error:
-          err instanceof Error
-            ? err.message
-            : 'An unexpected network error occurred. No medication comparison was produced.',
+        error: 'A communication error occurred. No medication comparison was produced.',
       };
     }
   }

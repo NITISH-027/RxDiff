@@ -163,7 +163,7 @@ export function auditStatusWord(
       return { statusWord: 'hold' };
     }
   } else if (lowerStatus === 'start') {
-    if (/\b(start|commence|initiate|new|begin)\b/i.test(combined)) {
+    if (/\b(start|commence|initiate|begin)\b/i.test(combined)) {
       return { statusWord: 'start' };
     }
   } else if (lowerStatus === 'continue') {

@@ -145,6 +145,19 @@ describe('Server Validation Pipeline (api/validation.ts)', () => {
       expect(res.statusWord).toBe('none');
       expect(res.warning).toContain('lacked visible source wording');
     });
+
+    it('resets start to none with warning when evidence contains "new medication list" without start/commence/initiate/begin', () => {
+      const res = auditStatusWord('start', 'new medication list', 'new medication list');
+      expect(res.statusWord).toBe('none');
+      expect(res.warning).toContain('lacked visible source wording');
+    });
+
+    it('retains start when start, commence, initiate, or begin is explicitly present', () => {
+      expect(auditStatusWord('start', 'START Metformin 500 mg', 'START Metformin').statusWord).toBe('start');
+      expect(auditStatusWord('start', 'Commence Lisinopril 10 mg', 'Commence Lisinopril').statusWord).toBe('start');
+      expect(auditStatusWord('start', 'Initiate Amlodipine 5 mg', 'Initiate Amlodipine').statusWord).toBe('start');
+      expect(auditStatusWord('start', 'Begin Atorvastatin 20 mg', 'Begin Atorvastatin').statusWord).toBe('start');
+    });
   });
 
   describe('auditNormalizedName', () => {

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "typecheck:api": "tsc -p tsconfig.api.json",
+    "build": "npm run typecheck:api && tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
     "format": "prettier --write .",

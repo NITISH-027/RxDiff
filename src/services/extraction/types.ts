@@ -3,7 +3,7 @@ import type { SourceDocument, DiffReport } from '../../types/medication.js';
 export type ExtractionStage = 'IDLE' | 'UPLOAD' | 'EXTRACT' | 'VALIDATE' | 'COMPARE';
 
 export interface ExtractionMetadata {
-  provider: 'gemini';
+  provider: 'gemini' | 'mock_fixture';
   request_id: string;
   warnings: string[];
 }
@@ -20,6 +20,7 @@ export interface LiveExtractionFailure {
   success: false;
   error: string;
   requestId?: string;
+  code?: string;
 }
 
 export type LiveExtractionResult = LiveExtractionSuccess | LiveExtractionFailure;

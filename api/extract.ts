@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   validateImageFiles,
   buildValidatedSourceDocuments,
@@ -7,7 +8,7 @@ import {
 } from './validation.js';
 
 export interface ExtractionMetadata {
-  provider: 'gemini';
+  provider: 'gemini' | 'mock_fixture';
   request_id: string;
   warnings: string[];
 }
@@ -16,6 +17,34 @@ export interface ExtractionResponsePayload {
   before: import('../src/types/medication.js').SourceDocument;
   after: import('../src/types/medication.js').SourceDocument;
   extraction_metadata: ExtractionMetadata;
+}
+
+export type ExtractionErrorCode =
+  | 'METHOD_NOT_ALLOWED'
+  | 'INVALID_IMAGE'
+  | 'EXTRACTION_NOT_CONFIGURED'
+  | 'MODEL_TIMEOUT'
+  | 'PROVIDER_ERROR'
+  | 'INVALID_EXTRACTION';
+
+export interface ErrorResponseBody {
+  code: ExtractionErrorCode;
+  error: string;
+  request_id: string;
+}
+
+interface GeminiCandidatePart {
+  text?: string;
+}
+
+interface GeminiCandidate {
+  content?: {
+    parts?: GeminiCandidatePart[];
+  };
+}
+
+interface GeminiGenerateContentResponse {
+  candidates?: GeminiCandidate[];
 }
 
 const SYSTEM_INSTRUCTION = `You are an expert clinical medication entity extraction engine.
@@ -118,6 +147,25 @@ const JSON_SCHEMA = {
   required: ['before', 'after'],
 };
 
+const SECURITY_HEADERS: Record<string, string> = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Type': 'application/json',
+};
+
+function createErrorResponse(
+  status: number,
+  code: ExtractionErrorCode,
+  error: string,
+  requestId: string
+): Response {
+  const body: ErrorResponseBody = { code, error, request_id: requestId };
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: SECURITY_HEADERS,
+  });
+}
+
 /**
  * Core handler logic taking a standard Web Request and returning a Web Response
  */
@@ -125,80 +173,105 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
   const requestId = crypto.randomUUID();
   const startTime = performance.now();
 
-  const securityHeaders = {
-    'Cache-Control': 'no-store, no-cache, must-revalidate',
-    'X-Content-Type-Options': 'nosniff',
-    'Content-Type': 'application/json',
-  };
-
-  // 1. Method check
+  // 1. Method check: only POST permitted
   if (request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({
-        error: 'Method Not Allowed. Use POST.',
-        request_id: requestId,
-      }),
-      { status: 405, headers: securityHeaders }
+    console.log(`[REQ ${requestId}] Outcome: 405 METHOD_NOT_ALLOWED`);
+    return createErrorResponse(
+      405,
+      'METHOD_NOT_ALLOWED',
+      'Method Not Allowed. Use POST.',
+      requestId
     );
   }
 
-  // 2. Parse Multipart Form Data
+  // 2. Parse Multipart Form Data: require exactly one 'before' and one 'after', no extra/duplicate fields
   let beforeFile: ValidationFile | null = null;
   let afterFile: ValidationFile | null = null;
 
   try {
     const formData = await request.formData();
-    const rawBefore = formData.get('before');
-    const rawAfter = formData.get('after');
+    const allKeys = Array.from(formData.keys());
+    const beforeEntries = formData.getAll('before');
+    const afterEntries = formData.getAll('after');
 
-    if (rawBefore && typeof rawBefore === 'object' && 'arrayBuffer' in rawBefore) {
-      const file = rawBefore as File;
-      const buf = Buffer.from(await file.arrayBuffer());
-      beforeFile = {
-        name: file.name || 'before',
-        type: file.type || 'application/octet-stream',
-        size: file.size,
-        data: buf,
-      };
+    if (
+      allKeys.length !== 2 ||
+      beforeEntries.length !== 1 ||
+      afterEntries.length !== 1
+    ) {
+      console.log(`[REQ ${requestId}] Outcome: 400 INVALID_IMAGE`);
+      return createErrorResponse(
+        400,
+        'INVALID_IMAGE',
+        'Invalid or missing image files. Provide exactly one before and one after image.',
+        requestId
+      );
     }
 
-    if (rawAfter && typeof rawAfter === 'object' && 'arrayBuffer' in rawAfter) {
-      const file = rawAfter as File;
-      const buf = Buffer.from(await file.arrayBuffer());
-      afterFile = {
-        name: file.name || 'after',
-        type: file.type || 'application/octet-stream',
-        size: file.size,
-        data: buf,
-      };
+    const rawBefore = beforeEntries[0];
+    const rawAfter = afterEntries[0];
+
+    if (
+      !rawBefore ||
+      typeof rawBefore !== 'object' ||
+      !('arrayBuffer' in rawBefore) ||
+      !rawAfter ||
+      typeof rawAfter !== 'object' ||
+      !('arrayBuffer' in rawAfter)
+    ) {
+      console.log(`[REQ ${requestId}] Outcome: 400 INVALID_IMAGE`);
+      return createErrorResponse(
+        400,
+        'INVALID_IMAGE',
+        'Invalid or missing image files. Provide exactly one before and one after image.',
+        requestId
+      );
     }
+
+    const beforeFileObj = rawBefore as File;
+    const afterFileObj = rawAfter as File;
+
+    beforeFile = {
+      name: beforeFileObj.name || 'before',
+      type: beforeFileObj.type || 'application/octet-stream',
+      size: beforeFileObj.size,
+      data: Buffer.from(await beforeFileObj.arrayBuffer()),
+    };
+
+    afterFile = {
+      name: afterFileObj.name || 'after',
+      type: afterFileObj.type || 'application/octet-stream',
+      size: afterFileObj.size,
+      data: Buffer.from(await afterFileObj.arrayBuffer()),
+    };
   } catch {
-    console.log(`[REQ ${requestId}] Outcome: 400 Bad Request (FormData parse failed)`);
-    return new Response(
-      JSON.stringify({
-        error: 'Malformed multipart form data. Provide "before" and "after" image files.',
-        request_id: requestId,
-      }),
-      { status: 400, headers: securityHeaders }
+    console.log(`[REQ ${requestId}] Outcome: 400 INVALID_IMAGE`);
+    return createErrorResponse(
+      400,
+      'INVALID_IMAGE',
+      'Invalid or missing image files. Provide exactly one before and one after image.',
+      requestId
     );
   }
 
   // 3. Validate image count, MIME types, and sizes
   const validation = validateImageFiles({ before: beforeFile, after: afterFile });
   if (!validation.valid || !beforeFile || !afterFile) {
-    console.log(`[REQ ${requestId}] Outcome: 400 Validation Error (${validation.error})`);
-    return new Response(
-      JSON.stringify({
-        error: validation.error || 'Invalid image files.',
-        request_id: requestId,
-      }),
-      { status: 400, headers: securityHeaders }
+    console.log(`[REQ ${requestId}] Outcome: 400 INVALID_IMAGE`);
+    return createErrorResponse(
+      400,
+      'INVALID_IMAGE',
+      'Invalid or missing image files. Provide exactly one before and one after image.',
+      requestId
     );
   }
 
-  // 4. Mock extraction support (for non-production automated testing when enabled)
-  const isMockExtraction = process.env.RXDIFF_MOCK_EXTRACTION === 'true';
-  if (isMockExtraction) {
+  // 4. Mock extraction support (Only allowed when RXDIFF_MOCK_EXTRACTION === 'true' AND NODE_ENV !== 'production')
+  const isMockAllowed =
+    process.env.RXDIFF_MOCK_EXTRACTION === 'true' &&
+    process.env.NODE_ENV !== 'production';
+
+  if (isMockAllowed) {
     const duration = Math.round(performance.now() - startTime);
     console.log(`[REQ ${requestId}] Outcome: 200 Mock Success Duration: ${duration}ms`);
 
@@ -254,7 +327,7 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
         extraction_warnings: [],
       },
       extraction_metadata: {
-        provider: 'gemini',
+        provider: 'mock_fixture',
         request_id: requestId,
         warnings: ['Mock extraction mode active'],
       },
@@ -262,26 +335,25 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
 
     return new Response(JSON.stringify(mockPayload), {
       status: 200,
-      headers: securityHeaders,
+      headers: SECURITY_HEADERS,
     });
   }
 
-  // 5. Check environment configuration
+  // 5. Check environment configuration (missing config: 503)
   const apiKey = process.env.GEMINI_API_KEY;
   const modelId = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
   if (!apiKey || !apiKey.trim()) {
-    console.log(`[REQ ${requestId}] Outcome: 500 Config Error (GEMINI_API_KEY missing)`);
-    return new Response(
-      JSON.stringify({
-        error: 'Server extraction is not configured. GEMINI_API_KEY is absent.',
-        request_id: requestId,
-      }),
-      { status: 500, headers: securityHeaders }
+    console.log(`[REQ ${requestId}] Outcome: 503 EXTRACTION_NOT_CONFIGURED`);
+    return createErrorResponse(
+      503,
+      'EXTRACTION_NOT_CONFIGURED',
+      'Server extraction is not configured.',
+      requestId
     );
   }
 
-  // 6. Call Gemini 3.6 Flash once with both labeled images
+  // 6. Call Gemini model once with both labeled images
   const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`;
 
   const abortController = new AbortController();
@@ -340,28 +412,26 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
 
     if (!geminiRes.ok) {
       const duration = Math.round(performance.now() - startTime);
-      console.log(`[REQ ${requestId}] Outcome: Gemini HTTP ${geminiRes.status} Error Duration: ${duration}ms`);
-      return new Response(
-        JSON.stringify({
-          error: `Extraction provider returned an error (HTTP ${geminiRes.status}). No medication comparison was produced.`,
-          request_id: requestId,
-        }),
-        { status: 502, headers: securityHeaders }
+      console.log(`[REQ ${requestId}] Outcome: 502 PROVIDER_ERROR Duration: ${duration}ms`);
+      return createErrorResponse(
+        502,
+        'PROVIDER_ERROR',
+        'Extraction provider error. No medication comparison was produced.',
+        requestId
       );
     }
 
-    const geminiData = (await geminiRes.json()) as any;
+    const geminiData = (await geminiRes.json()) as GeminiGenerateContentResponse;
     const candidateText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!candidateText) {
       const duration = Math.round(performance.now() - startTime);
-      console.log(`[REQ ${requestId}] Outcome: 502 Empty Model Response Duration: ${duration}ms`);
-      return new Response(
-        JSON.stringify({
-          error: 'Extraction provider returned empty content. No medication comparison was produced.',
-          request_id: requestId,
-        }),
-        { status: 502, headers: securityHeaders }
+      console.log(`[REQ ${requestId}] Outcome: 502 PROVIDER_ERROR Duration: ${duration}ms`);
+      return createErrorResponse(
+        502,
+        'PROVIDER_ERROR',
+        'Extraction provider error. No medication comparison was produced.',
+        requestId
       );
     }
 
@@ -370,25 +440,25 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
     try {
       parsedRaw = JSON.parse(candidateText);
     } catch {
-      console.log(`[REQ ${requestId}] Outcome: 502 Malformed JSON from model`);
-      return new Response(
-        JSON.stringify({
-          error: 'Model response was not valid JSON. No medication comparison was produced.',
-          request_id: requestId,
-        }),
-        { status: 502, headers: securityHeaders }
+      const duration = Math.round(performance.now() - startTime);
+      console.log(`[REQ ${requestId}] Outcome: 422 INVALID_EXTRACTION Duration: ${duration}ms`);
+      return createErrorResponse(
+        422,
+        'INVALID_EXTRACTION',
+        'The images could not be extracted reliably. No medication comparison was produced.',
+        requestId
       );
     }
 
     const validatedRaw = RawGeminiResponseSchema.safeParse(parsedRaw);
     if (!validatedRaw.success) {
-      console.log(`[REQ ${requestId}] Outcome: 502 Schema mismatch from model`);
-      return new Response(
-        JSON.stringify({
-          error: 'Model extraction schema mismatch. No medication comparison was produced.',
-          request_id: requestId,
-        }),
-        { status: 502, headers: securityHeaders }
+      const duration = Math.round(performance.now() - startTime);
+      console.log(`[REQ ${requestId}] Outcome: 422 INVALID_EXTRACTION Duration: ${duration}ms`);
+      return createErrorResponse(
+        422,
+        'INVALID_EXTRACTION',
+        'The images could not be extracted reliably. No medication comparison was produced.',
+        requestId
       );
     }
 
@@ -410,42 +480,44 @@ export async function handleExtractRequest(request: Request): Promise<Response> 
 
     return new Response(JSON.stringify(resultPayload), {
       status: 200,
-      headers: securityHeaders,
+      headers: SECURITY_HEADERS,
     });
   } catch (err: unknown) {
     clearTimeout(timeoutId);
     const duration = Math.round(performance.now() - startTime);
 
     if (err instanceof Error && err.name === 'AbortError') {
-      console.log(`[REQ ${requestId}] Outcome: 504 Gateway Timeout Duration: ${duration}ms`);
-      return new Response(
-        JSON.stringify({
-          error: 'Extraction request timed out. Please retry with clearer or smaller images.',
-          request_id: requestId,
-        }),
-        { status: 504, headers: securityHeaders }
+      console.log(`[REQ ${requestId}] Outcome: 504 MODEL_TIMEOUT Duration: ${duration}ms`);
+      return createErrorResponse(
+        504,
+        'MODEL_TIMEOUT',
+        'Extraction request timed out.',
+        requestId
       );
     }
 
-    console.log(`[REQ ${requestId}] Outcome: 422 Clinical Validation Failure Duration: ${duration}ms`);
-    return new Response(
-      JSON.stringify({
-        error:
-          err instanceof Error
-            ? err.message
-            : 'Clinical validation failed on extracted medication data. No medication comparison was produced.',
-        request_id: requestId,
-      }),
-      { status: 422, headers: securityHeaders }
+    console.log(`[REQ ${requestId}] Outcome: 422 INVALID_EXTRACTION Duration: ${duration}ms`);
+    return createErrorResponse(
+      422,
+      'INVALID_EXTRACTION',
+      'The images could not be extracted reliably. No medication comparison was produced.',
+      requestId
     );
   }
 }
 
-// Default export for Vercel Serverless Function runtime
-export default async function handler(req: any, res: any) {
-  // If already a Web Request (Vercel Edge / standard)
+// Single documented Vercel Serverless default handler
+export default async function handler(
+  req: IncomingMessage | Request,
+  res?: ServerResponse
+): Promise<Response | void> {
+  // If invoked with a Web standard Request
   if (req instanceof Request) {
     return handleExtractRequest(req);
+  }
+
+  if (!res) {
+    throw new Error('ServerResponse is missing for Node handler.');
   }
 
   // Node.js IncomingMessage / ServerResponse environment
@@ -454,12 +526,24 @@ export default async function handler(req: any, res: any) {
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
     const url = `${protocol}://${host}${req.url}`;
 
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (Array.isArray(value)) {
+        for (const v of value) headers.append(key, v);
+      } else if (typeof value === 'string') {
+        headers.set(key, value);
+      }
+    }
+
     const webRequest = new Request(url, {
       method: req.method,
-      headers: req.headers as any,
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
+      headers,
+      body:
+        req.method !== 'GET' && req.method !== 'HEAD'
+          ? (req as unknown as NonNullable<RequestInit['body']>)
+          : undefined,
       duplex: 'half',
-    });
+    } as RequestInit & { duplex?: string });
 
     const webResponse = await handleExtractRequest(webRequest);
 
@@ -470,19 +554,16 @@ export default async function handler(req: any, res: any) {
 
     const responseBody = await webResponse.text();
     res.end(responseBody);
-  } catch (err: unknown) {
-    res.statusCode = 500;
+  } catch {
+    res.statusCode = 502;
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-store');
     res.end(
       JSON.stringify({
-        error: 'Internal server error processing extraction request.',
+        code: 'PROVIDER_ERROR',
+        error: 'Extraction provider error. No medication comparison was produced.',
+        request_id: crypto.randomUUID(),
       })
     );
   }
-}
-
-// Web standard route export
-export async function POST(request: Request): Promise<Response> {
-  return handleExtractRequest(request);
 }

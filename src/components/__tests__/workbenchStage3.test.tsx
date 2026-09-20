@@ -97,7 +97,9 @@ describe('Stage 3 Dual Mode Workbench (App.tsx)', () => {
       ok: false,
       status: 422,
       json: async () => ({
-        error: 'Validation failed for before mention #1: Evidence quote does not match raw text',
+        code: 'INVALID_EXTRACTION',
+        error: 'The images could not be extracted reliably. No medication comparison was produced.',
+        request_id: 'fail-test-123',
       }),
     });
 
@@ -130,7 +132,8 @@ describe('Stage 3 Dual Mode Workbench (App.tsx)', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toBeInTheDocument();
     expect(alert).toHaveTextContent(/No medication comparison was produced/i);
-    expect(alert).toHaveTextContent(/Evidence quote does not match/i);
+    expect(alert).toHaveTextContent(/The images could not be extracted reliably/i);
+    expect(alert).not.toHaveTextContent(/Evidence quote does not match/i);
 
     // Files remain preserved in the dropzones
     expect(screen.getByText('prescription.png')).toBeInTheDocument();

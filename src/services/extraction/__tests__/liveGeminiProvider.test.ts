@@ -101,7 +101,8 @@ describe('LiveGeminiProvider', () => {
       ok: false,
       status: 422,
       json: async () => ({
-        error: 'Clinical validation failed on extracted medication data. No medication comparison was produced.',
+        code: 'INVALID_EXTRACTION',
+        error: 'The images could not be extracted reliably. No medication comparison was produced.',
         request_id: 'fail-req-456',
       }),
     });
@@ -109,7 +110,7 @@ describe('LiveGeminiProvider', () => {
     const res = await provider.extract(dummyBefore, dummyAfter);
     expect(res.success).toBe(false);
     if (!res.success) {
-      expect(res.error).toContain('Clinical validation failed');
+      expect(res.error).toBe('The images could not be extracted reliably. No medication comparison was produced.');
       expect(res.requestId).toBe('fail-req-456');
     }
   });
@@ -149,7 +150,7 @@ describe('LiveGeminiProvider', () => {
     const res = await provider.extract(dummyBefore, dummyAfter);
     expect(res.success).toBe(false);
     if (!res.success) {
-      expect(res.error).toContain('failed client schema validation');
+      expect(res.error).toBe('The images could not be extracted reliably. No medication comparison was produced.');
     }
   });
 
