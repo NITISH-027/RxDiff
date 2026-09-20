@@ -3,20 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --canvas: #080A0C;
-  --chrome: #0D1013;
-  --panel: #111519;
-  --panel-raised: #161B20;
-  --recessed: #07090B;
-  --paper: #F1EFE8;
-  --paper-ink: #191C1F;
-  --paper-muted: #676B70;
+  /* Deep graphite frame */
+  --canvas: #0B0E10;
+  --chrome: #101417;
+  --panel: #13181C;
+  --panel-raised: #1A2026;
+  --recessed: #080A0C;
+
+  /* Warm luminous paper */
+  --paper: #F3F0E8;
+  --paper-edge: #D8D2C5;
+  --paper-ink: #202326;
+  --paper-muted: #6B7280;
+
+  /* Restrained hairlines */
   --line-dark: rgba(255, 255, 255, 0.075);
-  --line-active: rgba(255, 255, 255, 0.16);
-  --line-paper: #D9D5CC;
-  --text: #ECEDEB;
-  --text-2: #92989E;
-  --text-3: #5E656C;
+  --line-active: rgba(255, 255, 255, 0.18);
+  --line-paper: #D8D2C5;
+
+  /* Text hierarchy */
+  --text: #F3F4F6;
+  --text-2: #9CA3AF;
+  --text-3: #6B7280;
+
+  /* Semantic status accents */
   --active: #38BDF8;
   --matched: #34D399;
   --changed: #F59E0B;
@@ -30,7 +40,26 @@
   color: var(--text);
 }
 
-/* Tabular numbers for all monetary, numerical, and timeline data */
+/* Subtle radial pool of warm light behind the workbench */
+.radial-light-pool {
+  background: radial-gradient(
+    circle at 50% 35%,
+    rgba(243, 240, 232, 0.035) 0%,
+    rgba(11, 14, 16, 0) 70%
+  );
+}
+
+/* 1-2% static grain overlay */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
+}
+
+/* Restrained physical paper shadow */
+.shadow-paper {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.14);
+}
+
+/* Tabular numbers for clinical quantities, markers, and metrics */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
@@ -41,7 +70,7 @@ a:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-/* Scan line animation for analysis strip */
+/* 1px traveling rule scan line animation for analysis strip */
 @keyframes scan-line {
   0% {
     transform: translateX(-100%);
@@ -57,14 +86,14 @@ a:active:not(:disabled) {
 }
 
 .animate-scan-line {
-  animation: scan-line 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: scan-line 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Fade slide entry for cards */
+/* Review reveal entrance animation */
 @keyframes card-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -73,10 +102,10 @@ a:active:not(:disabled) {
 }
 
 .animate-card-enter {
-  animation: card-enter 220ms ease-out forwards;
+  animation: card-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Reduced motion preference */
+/* Reduced motion preference: immediate updates */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -94,7 +123,7 @@ a:active:not(:disabled) {
   }
 }
 
-/* Print styling */
+/* Clean clinical print styling */
 @media print {
   body {
     background-color: #ffffff !important;

@@ -22,16 +22,16 @@ export const SourceRail: React.FC<SourceRailProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col h-full bg-paper text-paper-ink border border-line-paper rounded-[4px] shadow-sm overflow-hidden"
+      className="flex flex-col h-full bg-paper text-paper-ink border border-paper-edge rounded-[6px] shadow-paper overflow-hidden select-none"
       data-testid={`source-rail-${railType}`}
     >
-      {/* Rail Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-line-paper bg-[#EAE7DF]">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[11px] font-bold tracking-[0.10em] text-paper-ink uppercase">
+      {/* Continuous Document Masthead */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-paper-edge bg-[#EAE6DD] shrink-0">
+        <div className="flex items-baseline gap-2">
+          <h2 className="font-sans text-[12px] font-semibold tracking-wide text-paper-ink uppercase">
             {title}
-          </span>
-          <span className="text-[11px] text-paper-muted font-mono uppercase">
+          </h2>
+          <span className="text-[10.5px] text-paper-muted font-mono uppercase tracking-wider">
             [{sourceType}]
           </span>
         </div>
@@ -40,8 +40,8 @@ export const SourceRail: React.FC<SourceRailProps> = ({
         </span>
       </div>
 
-      {/* Rows Container */}
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+      {/* Continuous Paper Rows Container (14-16px rhythm) */}
+      <div className="flex-1 overflow-y-auto divide-y divide-paper-edge/75">
         {mentions.map((item) => {
           const isActive = activeMentionId === item.mention.mention_id;
           const isDimmed =
@@ -53,15 +53,18 @@ export const SourceRail: React.FC<SourceRailProps> = ({
               id={`${railType}-${item.mention.mention_id}`}
               data-anchor-id={`${railType}-${item.mention.mention_id}`}
               onClick={() => onSelectMention?.(item.mention.mention_id)}
-              className={`relative p-2.5 rounded-[3px] border transition-all duration-200 cursor-pointer ${
+              className={`relative px-3 py-2.5 transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-white border-[#38BDF8] shadow-sm ring-1 ring-[#38BDF8]'
-                  : 'bg-[#FAF8F5] border-line-paper hover:border-paper-muted/50 hover:bg-white'
-              } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
+                  ? 'bg-white ring-1 ring-active border-active z-10'
+                  : 'hover:bg-[#FAF9F5]'
+              } ${isDimmed ? 'opacity-35' : 'opacity-100'}`}
+              style={{
+                borderLeft: isActive ? '3px solid #38BDF8' : undefined,
+              }}
             >
-              {/* Row Header: Gutter Marker + Status/Name */}
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="font-mono text-[11px] font-bold text-paper-ink bg-[#E6E2D8] px-1.5 py-0.5 rounded-[2px] tabular-nums">
+              {/* Row Header: Gutter Marker + Status Pill */}
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="font-mono text-[11px] font-semibold text-paper-ink bg-[#E3DFD4] px-1.5 py-0.5 rounded-[2px] tabular-nums">
                   {item.marker}
                 </span>
 
@@ -72,7 +75,7 @@ export const SourceRail: React.FC<SourceRailProps> = ({
                         ? 'bg-[#FB7185]/20 text-[#BE123C]'
                         : item.mention.status_word === 'start'
                           ? 'bg-[#38BDF8]/20 text-[#0369A1]'
-                          : 'bg-[#EAE7DF] text-paper-muted'
+                          : 'bg-[#EAE6DD] text-paper-muted'
                     }`}
                   >
                     {item.mention.status_word}
@@ -80,36 +83,36 @@ export const SourceRail: React.FC<SourceRailProps> = ({
                 )}
               </div>
 
-              {/* Exact Evidence Line */}
-              <p className="font-mono text-[12.5px] leading-[18px] text-paper-ink mb-2 break-words">
+              {/* Exact Evidence Line (Dominant line) */}
+              <p className="font-mono text-[12.5px] leading-[18px] text-paper-ink mb-1.5 break-words">
                 &ldquo;{item.mention.evidence_quote}&rdquo;
               </p>
 
-              {/* Parsed Metadata Attributes */}
-              <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-line-paper/60 text-[11px] font-mono text-paper-muted">
+              {/* Parsed Values as Quiet Mono Annotations */}
+              <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-mono text-paper-muted">
                 {item.mention.strength_value !== null && (
-                  <span className="bg-[#EAE7DF] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
+                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
                     {item.mention.strength_value} {item.mention.strength_unit ?? ''}
                   </span>
                 )}
                 {item.mention.dose_quantity !== null && (
-                  <span className="bg-[#EAE7DF] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
+                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] tabular-nums text-paper-ink font-medium">
                     {item.mention.dose_quantity} {item.mention.dose_form ?? 'dose'}
                   </span>
                 )}
                 {item.mention.route && (
-                  <span className="bg-[#EAE7DF] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium">
+                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium">
                     {item.mention.route}
                   </span>
                 )}
                 {item.mention.frequency_raw && (
-                  <span className="bg-[#EAE7DF] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium truncate max-w-[150px]">
+                  <span className="bg-[#EAE6DD] px-1.5 py-0.5 rounded-[2px] text-paper-ink font-medium truncate max-w-[170px]">
                     {item.mention.frequency_raw}
                   </span>
                 )}
               </div>
 
-              {/* Visual Anchor Indicator for connector measurement */}
+              {/* Anchor Node for connector measurement */}
               <div
                 className={`absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
                   railType === 'before' ? '-right-[4px]' : '-left-[4px]'

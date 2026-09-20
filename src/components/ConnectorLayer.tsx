@@ -64,7 +64,6 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
       }
 
       // 2. RIGHT GUTTER: Diff card right edge -> AFTER Row left edge
-      // Only draw when AFTER mention exists AND inspector is not replacing the rail
       if (item.afterMention && diffRightEl && !inspectorOpen) {
         const diffRightRect = diffRightEl.getBoundingClientRect();
         const startX = diffRightRect.right - containerRect.left;
@@ -133,42 +132,15 @@ export const ConnectorLayer: React.FC<ConnectorLayerProps> = ({
 
         return (
           <g key={`${seg.diffId}-${seg.gutter}-${idx}`}>
-            {/* Connector Path */}
+            {/* Connector Path: subtle warm-gray hairline (18-24% opacity) / active sky (1.5px, 80% opacity) */}
             <path
               d={seg.d}
               fill="none"
-              stroke={isActive ? '#38BDF8' : 'rgba(255, 255, 255, 0.22)'}
-              strokeWidth={isActive ? 2 : 1.25}
-              strokeOpacity={isDimmed ? 0.08 : isActive ? 1 : 0.75}
-              strokeDasharray={isActive ? 'none' : '4 3'}
-              className="transition-all duration-200"
+              stroke={isActive ? '#38BDF8' : 'rgba(216, 210, 197, 0.22)'}
+              strokeWidth={isActive ? 1.5 : 1}
+              strokeOpacity={isDimmed ? 0.05 : isActive ? 0.85 : 0.22}
+              className="transition-all duration-150"
             />
-
-            {/* Tiny TRACE pill on the active connector in gutter */}
-            {isActive && (
-              <g transform={`translate(${seg.midX - 18}, ${seg.midY - 8})`}>
-                <rect
-                  width="36"
-                  height="16"
-                  rx="3"
-                  fill="#0D1013"
-                  stroke="#38BDF8"
-                  strokeWidth="1"
-                />
-                <text
-                  x="18"
-                  y="11"
-                  fill="#38BDF8"
-                  fontSize="9"
-                  fontFamily="'IBM Plex Mono', monospace"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  letterSpacing="0.08em"
-                >
-                  TRACE
-                </text>
-              </g>
-            )}
           </g>
         );
       })}

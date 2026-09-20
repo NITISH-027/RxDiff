@@ -142,124 +142,136 @@ export function App() {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white">
-      {/* 44px Compact Top Bar */}
-      <header className="no-print h-[44px] bg-chrome border-b border-line-dark px-3 sm:px-4 flex items-center justify-between gap-3 select-none shrink-0 z-30">
+    <div className="h-screen max-h-screen overflow-hidden bg-canvas text-text-1 flex flex-col selection:bg-active/20 selection:text-white radial-light-pool bg-grain">
+      {/* 56px Quiet Frame Top Bar */}
+      <header className="no-print h-[56px] bg-chrome border-b border-line-dark px-4 sm:px-6 flex items-center justify-between gap-3 select-none shrink-0 z-30">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <span className="font-mono text-[13px] font-bold tracking-[0.12em] text-white">
-            RXDIFF
+          <span className="font-sans text-[15px] font-semibold tracking-tight text-white">
+            <span>RxDiff</span>
+            <span className="sr-only">RXDIFF</span>
           </span>
-          <span className="text-[10px] text-text-3 font-mono border-l border-line-dark pl-2.5 tracking-[0.08em] hidden sm:inline">
-            MEDICATION RECONCILIATION
+          <span className="text-[12px] text-text-3 font-sans border-l border-line-dark pl-2.5 tracking-normal hidden sm:inline">
+            <span>Medication reconciliation</span>
+            <span className="sr-only">MEDICATION RECONCILIATION</span>
           </span>
         </div>
 
         {/* Center: Persistent Clinical Safety Statement (Desktop) */}
-        <div className="hidden md:flex items-center justify-center flex-1 max-w-[640px] text-center">
-          <p className="font-mono text-[11px] text-text-2 tracking-tight line-clamp-1 flex items-center gap-1.5">
+        <div className="hidden md:flex items-center justify-center flex-1 max-w-[680px] text-center">
+          <p className="font-sans text-[11.5px] text-text-2 tracking-normal line-clamp-1 flex items-center gap-1.5">
             <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
-            <span>Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.</span>
+            <span>
+              Do not start, stop, or change medicine based on RxDiff. Confirm every flagged item with a doctor or pharmacist.
+            </span>
           </p>
         </div>
 
         {/* Right: Synthetic / Live Badge & Print Handoff Button */}
         <div className="flex items-center gap-2.5 shrink-0">
           {mode === 'upload' && liveResult ? (
-            <span className="font-mono text-[10px] px-2 py-0.5 rounded-[2px] bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30 uppercase font-bold hidden sm:inline">
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-[3px] bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30 uppercase font-bold hidden sm:inline">
               LIVE EXTRACTION / REVIEW REQUIRED
             </span>
           ) : (
-            <span className="font-mono text-[10px] px-2 py-0.5 rounded-[2px] bg-panel-raised text-text-3 border border-line-dark uppercase hidden sm:inline">
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-[3px] bg-panel-raised text-text-3 border border-line-dark uppercase hidden sm:inline">
               SYNTHETIC DEMO — NO PATIENT DATA
             </span>
           )}
 
           <button
             onClick={handlePrint}
-            className="min-h-[28px] px-2.5 py-1 text-[11px] font-mono font-medium text-text-1 bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[3px] transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-active"
+            className="min-h-[32px] px-3 py-1 text-[11px] font-sans font-medium text-text-1 bg-panel hover:bg-panel-raised active:translate-y-[1px] border border-line-dark rounded-[4px] transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-active"
             title="Open printable medication reconciliation handoff"
           >
-            <PrinterIcon className="w-3.5 h-3.5 text-text-1" />
-            <span>PRINT HANDOFF</span>
+            <PrinterIcon className="w-3.5 h-3.5 text-text-2" />
+            <span>
+              <span>Print handoff</span>
+              <span className="sr-only">PRINT HANDOFF</span>
+            </span>
           </button>
         </div>
       </header>
 
-      {/* Compact Mobile Safety Strip (Visible on mobile screens) */}
+      {/* Compact Mobile Safety Strip (48-52px on mobile) */}
       <div
-        className="no-print md:hidden bg-[#0D1013] border-b border-line-dark px-3 py-1.5 flex items-center justify-between gap-2 text-[10px] font-mono shrink-0"
+        className="no-print md:hidden bg-chrome border-b border-line-dark px-3 py-1.5 flex items-center justify-between gap-2 text-[10.5px] font-sans shrink-0 min-h-[48px]"
         data-testid="mobile-safety-strip"
       >
         <div className="flex items-center gap-1.5 text-text-2 flex-1">
           <WarningIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
-          <span className="leading-tight">
+          <span className="leading-snug">
             Do not start, stop, or change medicine based on RxDiff. Confirm with a doctor or pharmacist.
           </span>
         </div>
-        <span className="px-1.5 py-0.5 rounded-[2px] bg-panel-raised text-text-3 border border-line-dark uppercase text-[9px] font-bold shrink-0">
+        <span className="px-1.5 py-0.5 rounded-[2px] bg-panel-raised text-text-3 border border-line-dark uppercase text-[9px] font-mono font-bold shrink-0">
           {mode === 'upload' && liveResult ? 'LIVE RUN' : 'SYNTHETIC DEMO'}
         </span>
       </div>
 
-      {/* Main Workspace (Strictly fits inside 1440x900 with zero page scroll) */}
-      <main className="no-print flex-1 min-h-0 flex flex-col max-w-[1440px] w-full mx-auto px-3 sm:px-4 py-2 sm:py-2.5 space-y-2 overflow-hidden">
-        {/* Compact Entry Area: Title + Mode Switcher */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-line-dark shrink-0">
+      {/* Main Workspace (Max 1480px, strictly fits inside 1440x900 with zero page scroll) */}
+      <main className="no-print flex-1 min-h-0 flex flex-col max-w-[1480px] w-full mx-auto px-4 sm:px-6 py-2.5 space-y-2.5 overflow-hidden">
+        {/* Editorial Compact Entry Area */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 pb-2 border-b border-line-dark shrink-0">
           <div>
-            <h1 className="text-[16px] font-bold text-text-1 tracking-tight">
+            <div className="font-mono text-[10.5px] tracking-[0.12em] text-text-3 uppercase mb-0.5">
+              Medication reconciliation, with evidence.
+            </div>
+            <h1 className="font-sans text-[clamp(24px,2.5vw,34px)] font-semibold text-text-1 tracking-tight leading-tight">
               Two lists. One safer conversation.
             </h1>
-            <p className="text-[11.5px] text-text-2 mt-0.5">
+            <p className="font-sans text-[12.5px] text-text-2 mt-0.5">
               Deterministic verification between previous prescription and discharge lists.
             </p>
           </div>
 
           {/* Mode Switcher + Selectors */}
-          <div className="flex items-center gap-2">
-            {/* Primary Mode Switch: DEMO CASES vs ANALYZE IMAGES */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 shrink-0">
+            {/* Mode Control: Warm physical two-position switch */}
             <div
-              className="flex items-center gap-1 bg-chrome p-1 rounded-[4px] border border-line-dark shrink-0"
+              className="flex items-center gap-1 bg-[#101417] p-1 rounded-[6px] border border-line-dark shrink-0"
               role="tablist"
               aria-label="Workflow Mode"
             >
               <button
                 role="tab"
                 aria-selected={mode === 'demos'}
+                aria-label="Explore demo (demo cases)"
                 onClick={() => setMode('demos')}
-                className={`min-h-[30px] px-3 py-1 text-[11px] font-mono font-medium rounded-[3px] transition-all ${
+                className={`min-h-[30px] px-3.5 py-1 text-[11.5px] font-sans font-medium rounded-[4px] transition-all ${
                   mode === 'demos'
-                    ? 'bg-panel-raised text-white font-bold border border-line-active shadow-sm'
+                    ? 'bg-panel-raised text-white font-semibold border border-line-active shadow-sm'
                     : 'text-text-3 hover:text-text-2 hover:bg-panel'
                 }`}
               >
-                DEMO CASES
+                <span>Explore demo</span>
               </button>
               <button
                 role="tab"
                 aria-selected={mode === 'upload'}
+                aria-label="Analyze images"
                 onClick={() => setMode('upload')}
-                className={`min-h-[30px] px-3 py-1 text-[11px] font-mono font-medium rounded-[3px] transition-all ${
+                className={`min-h-[30px] px-3.5 py-1 text-[11.5px] font-sans font-medium rounded-[4px] transition-all ${
                   mode === 'upload'
-                    ? 'bg-panel-raised text-white font-bold border border-line-active shadow-sm'
+                    ? 'bg-panel-raised text-white font-semibold border border-line-active shadow-sm'
                     : 'text-text-3 hover:text-text-2 hover:bg-panel'
                 }`}
               >
-                ANALYZE IMAGES
+                <span>Analyze images</span>
               </button>
             </div>
 
-            {/* Case Selectors (Only shown in demo mode) */}
+            {/* Demo Cases Editorial Index with Fine Warm Underline (Only shown in demo mode) */}
             {mode === 'demos' && (
               <div
-                className="flex items-center gap-1.5 bg-chrome p-1 rounded-[4px] border border-line-dark shrink-0"
+                className="flex items-center gap-1 overflow-x-auto p-1 bg-[#101417] rounded-[6px] border border-line-dark shrink-0"
                 role="tablist"
                 aria-label="Bundled Demo Cases"
               >
                 {[
-                  { id: 'case-a', label: 'A / Regimen changes' },
-                  { id: 'case-b', label: 'B / Omission safety' },
-                  { id: 'case-c', label: 'C / Alias duplicate' },
+                  { id: 'case-a', index: '01', title: 'Regimen changes', fullLabel: 'A / Regimen changes' },
+                  { id: 'case-b', index: '02', title: 'Omission safety', fullLabel: 'B / Omission safety' },
+                  { id: 'case-c', index: '03', title: 'Alias duplicate', fullLabel: 'C / Alias duplicate' },
                 ].map((c) => {
                   const isSelected = selectedCase === c.id;
                   return (
@@ -269,13 +281,21 @@ export function App() {
                       onClick={() => handleSelectCase(c.id as CaseKey)}
                       role="tab"
                       aria-selected={isSelected}
-                      className={`min-h-[30px] px-2.5 py-1 text-[11px] font-mono rounded-[3px] transition-all ${
+                      aria-label={`${c.index} ${c.title} (${c.fullLabel})`}
+                      className={`relative min-h-[30px] px-2.5 py-1 text-[11px] font-mono rounded-[3px] transition-all whitespace-nowrap flex items-center gap-1.5 ${
                         isSelected
-                          ? 'bg-panel-raised text-white font-bold border border-line-active shadow-sm'
+                          ? 'text-white font-semibold bg-panel-raised'
                           : 'text-text-3 hover:text-text-2 hover:bg-panel'
                       }`}
                     >
-                      {c.label}
+                      <span className="text-text-3 font-bold">{c.index}</span>
+                      <span>{c.title}</span>
+                      {isSelected && (
+                        <span
+                          className="absolute bottom-0 inset-x-2 h-[1.5px] bg-[#D8D2C5]"
+                          aria-hidden="true"
+                        />
+                      )}
                     </button>
                   );
                 })}
@@ -287,8 +307,8 @@ export function App() {
         {/* WORKBENCH BODY */}
         {mode === 'demos' ? (
           <>
-            {/* 34px Analysis Strip with 1px Solid Sky Line */}
-            <div className="relative h-[34px] bg-panel rounded-[4px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0">
+            {/* Thin Timeline Stepper with 1px Traveling Rule */}
+            <div className="relative h-[32px] bg-panel rounded-[5px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0">
               {isAnalyzing && (
                 <div
                   className="absolute inset-y-0 w-[1px] bg-active animate-scan-line pointer-events-none"
@@ -296,7 +316,7 @@ export function App() {
                 />
               )}
 
-              {/* Stepper Pipeline */}
+              {/* Stepper Pipeline: READ → STRUCTURE → MATCH → REVIEW */}
               <div className="flex items-center gap-1 sm:gap-2 text-[10.5px] font-mono">
                 <span className={analyzingStep >= 0 ? 'text-active font-bold' : 'text-text-3'}>
                   READ {analyzingStep > 0 && '✓'}
@@ -314,12 +334,13 @@ export function App() {
                   REVIEW
                 </span>
                 <span className="text-text-3 ml-2 pl-2 border-l border-line-dark hidden md:inline">
-                  Structured demo case
+                  <span>Synthetic example</span>
+                  <span className="sr-only">Structured demo case</span>
                 </span>
               </div>
 
-              {/* Real Summary Metric */}
-              <div className="font-mono text-[11px] font-bold text-text-1 tracking-wider tabular-nums">
+              {/* Summary Metric */}
+              <div className="font-mono text-[11px] font-semibold text-text-1 tracking-wider tabular-nums">
                 {isAnalyzing ? (
                   <span className="text-text-3 italic">Analyzing regimen...</span>
                 ) : (
@@ -333,12 +354,12 @@ export function App() {
           </>
         ) : (
           /* UPLOAD MODE */
-          <div className="flex-1 min-h-0 flex flex-col space-y-2 overflow-hidden">
-            {/* Top Mandatory De-Identification Disclaimer Banner */}
-            <div className="p-2.5 rounded-[4px] bg-panel border border-line-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div className="flex-1 min-h-0 flex flex-col space-y-2.5 overflow-hidden">
+            {/* Top Mandatory De-Identification Disclaimer Banner on Warm Recessed Material */}
+            <div className="p-2.5 rounded-[6px] bg-[#101417] border border-line-dark flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
               <div className="flex items-start gap-2 max-w-[840px]">
                 <WarningIcon className="w-4 h-4 text-[#F59E0B] shrink-0 mt-0.5" />
-                <div className="text-[11.5px] font-mono text-text-2 leading-[17px]">
+                <div className="text-[11.5px] font-sans text-text-2 leading-[17px]">
                   <span>
                     Prototype only. Use de-identified medication lists. Images are processed for this request and are not stored by RxDiff. Do not start, stop, or change medicine based on the result.
                   </span>
@@ -346,7 +367,7 @@ export function App() {
               </div>
 
               {/* Mandatory De-identification Checkbox */}
-              <label className="flex items-center gap-2 text-[11px] font-mono font-medium text-text-1 cursor-pointer select-none shrink-0 bg-[#0D1013] px-2.5 py-1.5 rounded-[3px] border border-line-dark hover:border-line-active">
+              <label className="flex items-center gap-2 text-[11px] font-sans font-medium text-text-1 cursor-pointer select-none shrink-0 bg-[#0B0E10] px-3 py-1.5 rounded-[4px] border border-line-dark hover:border-line-active">
                 <input
                   type="checkbox"
                   checked={deidentifiedConfirmed}
@@ -362,7 +383,7 @@ export function App() {
             {liveResult && livePresentationModel ? (
               <div className="flex-1 min-h-0 flex flex-col space-y-2 overflow-hidden">
                 {/* Live Extraction Action Strip */}
-                <div className="h-[34px] bg-panel rounded-[4px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0 font-mono text-[11px]">
+                <div className="h-[34px] bg-panel rounded-[5px] border border-line-dark px-3 flex items-center justify-between gap-2 overflow-hidden select-none shrink-0 font-mono text-[11px]">
                   <div className="flex items-center gap-2 text-active font-bold">
                     <span className="w-2 h-2 rounded-full bg-active animate-pulse" />
                     <span>LIVE EXTRACTION COMPLETE</span>
@@ -372,12 +393,12 @@ export function App() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="text-text-1 font-bold tabular-nums">
+                    <span className="text-text-1 font-semibold tabular-nums">
                       {livePresentationModel.summaryText}
                     </span>
                     <button
                       onClick={handleResetUpload}
-                      className="px-2.5 py-0.5 bg-panel-raised hover:bg-[#1A2027] text-text-2 hover:text-white border border-line-dark rounded-[2px] transition-colors"
+                      className="px-2.5 py-0.5 bg-panel-raised hover:bg-[#202730] text-text-2 hover:text-white border border-line-dark rounded-[3px] transition-colors"
                     >
                       New Images
                     </button>
@@ -388,25 +409,38 @@ export function App() {
                 <ReconciliationCanvas model={livePresentationModel} />
               </div>
             ) : (
-              /* Dropzones and Upload Actions */
-              <div className="flex-1 min-h-0 flex flex-col space-y-2 overflow-hidden">
-                {/* Dual Dropzone Wells */}
-                <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3 overflow-hidden">
+              /* Dual Document Sleeves Tray */
+              <div className="flex-1 min-h-0 flex flex-col space-y-2.5 overflow-hidden">
+                {/* Dual Document Sleeves with Quiet Relationship Divider */}
+                <div className="relative flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3.5 overflow-hidden items-stretch">
                   <ImageUploadDropzone
-                    label="01 BEFORE IMAGE"
-                    subtitle="Previous Prescription / Home List"
+                    label="01 Previous list"
+                    subtitle="Previous prescription / home list"
                     file={beforeFile}
                     onFileSelected={(f) => setBeforeFile(f)}
                     onFileRemoved={() => setBeforeFile(null)}
                     disabled={isUploading}
+                    ariaLabel="01 BEFORE IMAGE"
+                    srLabel="01 BEFORE IMAGE"
                   />
+
+                  {/* Quiet 'Compare evidence' relationship mark */}
+                  <div
+                    className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 px-2 py-1 bg-[#101417] border border-line-dark rounded-[4px] shadow-sm pointer-events-none text-[10.5px] font-sans text-text-3 uppercase tracking-wider items-center gap-1.5"
+                    aria-hidden="true"
+                  >
+                    <span>Compare evidence</span>
+                  </div>
+
                   <ImageUploadDropzone
-                    label="02 AFTER IMAGE"
-                    subtitle="New Discharge / Inpatient Order List"
+                    label="02 Discharge list"
+                    subtitle="New discharge / inpatient list"
                     file={afterFile}
                     onFileSelected={(f) => setAfterFile(f)}
                     onFileRemoved={() => setAfterFile(null)}
                     disabled={isUploading}
+                    ariaLabel="02 AFTER IMAGE"
+                    srLabel="02 AFTER IMAGE"
                   />
                 </div>
 
@@ -414,7 +448,7 @@ export function App() {
                 {uploadError && (
                   <div
                     role="alert"
-                    className="p-3 rounded-[4px] bg-[#FB7185]/10 border border-[#FB7185]/30 text-text-1 font-mono text-[12px] flex items-start justify-between gap-2 shrink-0"
+                    className="p-3 rounded-[5px] bg-[#FB7185]/10 border border-[#FB7185]/30 text-text-1 font-mono text-[12px] flex items-start justify-between gap-2 shrink-0"
                   >
                     <div className="flex items-start gap-2">
                       <span className="text-[#FB7185] font-bold">FAILURE:</span>
@@ -438,7 +472,7 @@ export function App() {
                 )}
 
                 {/* Bottom Extraction Action Bar */}
-                <div className="relative p-2 bg-panel rounded-[4px] border border-line-dark flex items-center justify-between gap-3 shrink-0 select-none overflow-hidden">
+                <div className="relative p-2.5 bg-panel rounded-[6px] border border-line-dark flex items-center justify-between gap-3 shrink-0 select-none overflow-hidden">
                   {/* Active Scan Line during Upload/Extract */}
                   {isUploading && (
                     <div
@@ -495,28 +529,30 @@ export function App() {
                     </span>
                   </div>
 
-                  {/* Actions: Analyze or Cancel */}
+                  {/* CTA: 48px high, high contrast */}
                   <div className="flex items-center gap-2">
                     {isUploading ? (
                       <button
                         type="button"
                         onClick={handleCancelExtraction}
-                        className="px-3 py-1.5 text-[11px] font-mono font-medium text-[#FB7185] bg-[#FB7185]/10 hover:bg-[#FB7185]/20 border border-[#FB7185]/40 rounded-[3px] transition-colors"
+                        className="h-[48px] px-4 text-[12px] font-sans font-medium text-[#FB7185] bg-[#FB7185]/10 hover:bg-[#FB7185]/20 border border-[#FB7185]/40 rounded-[5px] transition-colors"
                       >
                         Cancel
                       </button>
                     ) : (
                       <button
                         type="button"
+                        role="button"
                         onClick={handleStartExtraction}
                         disabled={!beforeFile || !afterFile || !deidentifiedConfirmed}
-                        className={`px-4 py-1.5 text-[11.5px] font-mono font-bold rounded-[3px] transition-all flex items-center gap-2 ${
+                        aria-label="Compare medication lists (analyze medication lists)"
+                        className={`h-[48px] px-6 text-[13px] font-sans font-semibold rounded-[5px] transition-all flex items-center gap-2 ${
                           beforeFile && afterFile && deidentifiedConfirmed
-                            ? 'bg-active text-black hover:bg-[#7dd3fc] shadow-md cursor-pointer'
-                            : 'bg-panel-raised text-text-3 border border-line-dark cursor-not-allowed opacity-50'
+                            ? 'bg-text-1 text-canvas hover:bg-white shadow-md cursor-pointer active:translate-y-[1px]'
+                            : 'bg-panel-raised text-text-3 border border-line-dark cursor-not-allowed opacity-40'
                         }`}
                       >
-                        <span>ANALYZE MEDICATION LISTS</span>
+                        <span>Compare medication lists</span>
                         <span>→</span>
                       </button>
                     )}

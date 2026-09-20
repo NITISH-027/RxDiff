@@ -13,6 +13,7 @@ export default {
         'panel-raised': 'var(--panel-raised)',
         recessed: 'var(--recessed)',
         paper: 'var(--paper)',
+        'paper-edge': 'var(--paper-edge)',
         'paper-ink': 'var(--paper-ink)',
         'paper-muted': 'var(--paper-muted)',
         'line-dark': 'var(--line-dark)',
@@ -29,13 +30,14 @@ export default {
         uncertain: 'var(--uncertain)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['"IBM Plex Mono"', '"JetBrains Mono"', 'monospace'],
       },
       borderRadius: {
         sm: '2px',
         DEFAULT: '4px',
         md: '6px',
+        lg: '8px',
       },
     },
   },
