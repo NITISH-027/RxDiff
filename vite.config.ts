@@ -27,6 +27,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), apiExtractPlugin()],
+    server: {
+      watch: {
+        ignored: ['**/*.mp4', '**/public/**'],
+      },
+    },
     test: {
       globals: true,
       environment: 'jsdom',
