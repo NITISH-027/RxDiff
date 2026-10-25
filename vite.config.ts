@@ -14,6 +14,14 @@ function apiExtractPlugin(): Plugin {
           next(err);
         }
       });
+      server.middlewares.use('/api/lab-extract', async (req, res, next) => {
+        try {
+          const { default: handler } = await import('./api/lab-extract.js');
+          await handler(req, res);
+        } catch (err) {
+          next(err);
+        }
+      });
     },
   };
 }

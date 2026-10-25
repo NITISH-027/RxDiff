@@ -13,7 +13,9 @@ import type { ExtractionStage, LiveExtractionSuccess } from './services/extracti
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal.js';
 import { hapticAudio } from './utils/audioHaptics.js';
 import { formatClinicalSummaryText } from './utils/exportSummary.js';
+import { LabReviewWorkbench } from './components/lab/LabReviewWorkbench.js';
 
+type FeatureMode = 'medication' | 'lab';
 type WorkbenchMode = 'demos' | 'upload';
 type CaseKey = 'case-a' | 'case-b' | 'case-c';
 
@@ -33,6 +35,7 @@ const CASE_BACKSTORIES: Record<CaseKey, { department: string; summary: string }>
 };
 
 export function App() {
+  const [feature, setFeature] = useState<FeatureMode>('medication');
   const [showHero, setShowHero] = useState<boolean>(false);
   const [mode, setMode] = useState<WorkbenchMode>('demos');
   const [selectedCase, setSelectedCase] = useState<CaseKey>('case-a');
@@ -262,13 +265,55 @@ export function App() {
 
         {/* Right: Controls, Audio Toggle, Shortcuts, Copy, Mode Badge & Print */}
         <div className="flex items-center gap-2 shrink-0">
-          {mode === 'upload' && liveResult ? (
+          {/* Top-Level Feature Switch */}
+          <div
+            className="flex items-center gap-1 bg-[#EDE8DF] p-0.5 rounded-[6px] border border-[#E5E0D8] shrink-0"
+            role="tablist"
+            aria-label="Workflow Mode Selection"
+          >
+            <button
+              role="tab"
+              aria-selected={feature === 'medication'}
+              onClick={() => setFeature('medication')}
+              className={`min-h-[28px] px-2.5 py-0.5 text-[11px] font-sans font-medium rounded-[4px] transition-all ${
+                feature === 'medication'
+                  ? 'bg-white text-[#1A1D20] font-semibold border border-[#E5E0D8]/80 shadow-xs'
+                  : 'text-[#75808B] hover:text-[#1A1D20]'
+              }`}
+            >
+              Medication Comparison
+            </button>
+            <button
+              role="tab"
+              aria-selected={feature === 'lab'}
+              onClick={() => setFeature('lab')}
+              className={`min-h-[28px] px-2.5 py-0.5 text-[11px] font-sans font-medium rounded-[4px] transition-all ${
+                feature === 'lab'
+                  ? 'bg-white text-[#1A1D20] font-semibold border border-[#E5E0D8]/80 shadow-xs'
+                  : 'text-[#75808B] hover:text-[#1A1D20]'
+              }`}
+            >
+              Lab Report Review
+            </button>
+          </div>
+
+          {feature === 'medication' && (
+            <>
+              {mode === 'upload' && liveResult ? (
+                <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#E8EFEA] text-[#2E6B56] border border-[#2E6B56]/20 font-medium hidden sm:inline">
+                  LIVE EXTRACTION / REVIEW REQUIRED
+                </span>
+              ) : (
+                <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#F5F2EB] text-[#75808B] border border-[#E5E0D8] hidden xl:inline">
+                  SYNTHETIC DEMO
+                </span>
+              )}
+            </>
+          )}
+
+          {feature === 'lab' && (
             <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#E8EFEA] text-[#2E6B56] border border-[#2E6B56]/20 font-medium hidden sm:inline">
-              LIVE EXTRACTION / REVIEW REQUIRED
-            </span>
-          ) : (
-            <span className="font-mono text-[10.5px] px-2 py-0.5 rounded-[3px] bg-[#F5F2EB] text-[#75808B] border border-[#E5E0D8] hidden xl:inline">
-              SYNTHETIC DEMO
+              LAB REVIEW MODE
             </span>
           )}
 
@@ -363,8 +408,12 @@ export function App() {
 
       {/* Main Spacious Centered Workspace */}
       <main id="workspace" className="no-print flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6 py-6 pb-24 space-y-6">
-        {/* Editorial Header Entry Area */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-3 border-b border-[#E5E0D8] shrink-0">
+        {feature === 'lab' ? (
+          <LabReviewWorkbench />
+        ) : (
+          <>
+            {/* Editorial Header Entry Area */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-3 border-b border-[#E5E0D8] shrink-0">
           <div>
             <div className="font-mono text-[10.5px] tracking-[0.14em] text-[#75808B] uppercase mb-1">
               Clinical Medication Reconciliation
@@ -728,6 +777,8 @@ export function App() {
             )}
           </div>
         )}
+          </>
+        )}
       </main>
       </div>
 
@@ -738,7 +789,9 @@ export function App() {
       />
 
       {/* Dedicated Print Handoff Sheet */}
-      <PrintHandoff model={activePresentationModel} />
+      {feature === 'medication' && (
+        <PrintHandoff model={activePresentationModel} />
+      )}
     </div>
   );
 }

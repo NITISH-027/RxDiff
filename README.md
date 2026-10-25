@@ -8,9 +8,14 @@
   <img src="https://img.shields.io/badge/Architecture-Deterministic%20Zero--Hallucination-1A1D20?style=for-the-badge&logo=codeforces&logoColor=white" alt="Deterministic Zero-Hallucination" />
   <img src="https://img.shields.io/badge/Vision%20Engine-Gemini%20Multimodal-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini Multimodal" />
   <img src="https://img.shields.io/badge/React-19.2%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19 & Vite" />
-  <img src="https://img.shields.io/badge/Tests-93%20Passing%20(100%25)-059669?style=for-the-badge&logo=vitest&logoColor=white" alt="93 Passing Tests" />
+  <img src="https://img.shields.io/badge/Tests-160%20Passing%20(100%25)-059669?style=for-the-badge&logo=vitest&logoColor=white" alt="160 Passing Tests" />
   <img src="https://img.shields.io/badge/Deployment-Vercel%20Optimized-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Optimized" />
 </p>
+
+---
+
+> ### 📢 **Pre-built Disclosure & Hackathon Context**
+> *RxDiff core — extraction pipeline, evidence anchoring, UI shell — was built for HACKDAY 1.0 (Sept 2026). The **Lab Report Review** mode is new today.*
 
 ---
 
@@ -26,8 +31,12 @@
 > ⚠️ **CLINICAL MANDATE:** *Hospital transitions (admission to discharge) account for over **50% of all hospital medication errors**. Unintentional omissions, unrecognized brand-generic therapeutic duplications, and subtle dose frequency titrations frequently escape manual review.*
 
 **RxDiff** is an enterprise clinical decision-support workbench built on a **two-tier air-gapped architecture**:
-1. 👁️ **Multimodal Vision Extractor (Gemini)**: Acts exclusively as a high-fidelity OCR and structured entity reader. It never reasons, validates, diagnoses, or classifies medication changes.
-2. ⚙️ **Pure Deterministic Diff Engine**: A 100% mathematical, rule-bound reconciliation engine that computes discrepancies, detects omissions, prevents therapeutic duplications, and anchors every clinical flag directly to verbatim image evidence.
+1. 👁️ **Multimodal Vision Extractor (Gemini)**: Acts exclusively as a high-fidelity OCR and structured entity reader. It never reasons, validates, diagnoses, or classifies medication changes or lab abnormalities.
+2. ⚙️ **Pure Deterministic Diff & Range Engines**: 100% mathematical, rule-bound engines that compute medication discrepancies and lab reference range comparisons (`HIGH`, `LOW`, `WITHIN RANGE`, `CAN'T ASSESS`), anchoring every clinical flag directly to verbatim image evidence.
+
+### 🧪 Modes
+* 💊 **Medication Reconciliation**: Reconcile pre-admission home medications against hospital discharge orders.
+* 🩸 **Lab Report Review**: Reads single lab report images or bundled reports, requires clinician/user confirmation before computing flags, evaluates against printed ranges, and runs prototype co-abnormality review prompts.
 
 📺 **Live Demo Video**: [Watch the full demonstration on Google Drive](https://drive.google.com/file/d/1Vn3KboK0jClShztNo4HdSVCNFss7YVbS/view?usp=sharing)
 
@@ -228,20 +237,38 @@ RxDiff is fully configured for Vercel Serverless Functions with native 60s timeo
 
 ## 🧪 Comprehensive Verification Suite
 
-RxDiff includes **93 automated unit and integration tests** validating every clinical invariant, edge case, and security boundary:
+RxDiff includes **160 automated unit and integration tests across 21 test files** validating every clinical invariant, edge case, and security boundary:
 
 ```bash
-Test Files  15 passed (15)
-     Tests  93 passed (93)
-  Duration  10.75s
+Test Files  21 passed (21)
+     Tests  160 passed (160)
+  Duration  8.66s
 ```
 
+* ✅ `src/engine/lab/__tests__/rangeParser.test.ts`: Closed intervals, unicode inequalities (≤, ≥, <, >), fail-closed handling.
+* ✅ `src/engine/lab/__tests__/rangeEngine.test.ts`: Strict equality bounds, fail-closed unit mismatch and qualitative handling.
+* ✅ `src/engine/lab/__tests__/combinationRules.test.ts`: Prototype co-abnormality triggers, fasting gate, and same-report invariants.
+* ✅ `api/__tests__/labValidation.test.ts`: Server-side verbatim evidence audit, numeric presence checks, and deterministic alias mapping.
+* ✅ `api/__tests__/labExtractSecurity.test.ts`: Endpoint security, single-file validation, mock mode safety, and error handling.
+* ✅ `src/components/__tests__/labWorkbench.test.tsx`: End-to-end UI testing: confirmation table, flag chips, evidence disclosure, and inline correction.
 * ✅ `src/engine/__tests__/diffEngine.test.ts`: Deterministic classification, precedence, and brand-generic resolution.
 * ✅ `api/__tests__/extractSecurity.test.ts`: Multipart boundaries, prompt injection isolation, and 405/400/503 handlers.
 * ✅ `api/__tests__/validation.test.ts`: Zod schema validation, image byte limits, and verbatim quote normalization.
 * ✅ `src/components/__tests__/safetyNarrowPass.test.tsx`: Guarantees zero AI confidence hallucination in UI.
 * ✅ `src/utils/__tests__/wordDiff.test.ts`: Word-level diffing accuracy.
 * ✅ `src/utils/__tests__/audioHaptics.test.ts`: Web Audio API sound synthesis and mute state toggling.
+
+---
+
+## ⚖️ Honest Limitations & Clinical Disclaimers
+
+* **Printed Range Comparison Only**: Flags compare values only against the reference range printed on that specific report; reference ranges differ between laboratories.
+* **Prototype Co-Abnormality Prompts**: The three combination prompts are prototype co-abnormality review prompts. Their MedlinePlus sources establish that the test pairs are clinically related; they do not validate these automated paired rules. No diagnostic inference is made.
+* **Fail-Closed on Unit Mismatch**: No unit conversion is performed; a unit mismatch is always classified as *Can't assess*, never silently converted.
+* **Qualitative Safeguards**: Qualitative results (e.g. *Positive*, *Trace*, *<5*) are displayed faithfully but never flagged.
+* **Single-Report Scope**: One report at a time; no trend analysis, historical longitudinal tracking, or cross-report comparison.
+* **Safety Confirmation Step**: Extraction accuracy is not guaranteed; the safety-critical confirmation step exists because machine extraction can be erroneous. A wrong extracted value never silently becomes a medical flag.
+* **Disclosure**: RxDiff core — extraction pipeline, evidence anchoring, UI shell — was built for HACKDAY 1.0 (Sept 2026). The Lab Report Review mode is new today.
 
 ---
 
