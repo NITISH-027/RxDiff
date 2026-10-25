@@ -503,6 +503,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <p className="font-serif text-[15px] text-white/90 leading-snug">
                 You leave the hospital with a new list of medicines.
               </p>
+              <p className="text-[12px] text-white/70 font-sans leading-snug">
+                Along with altered prescriptions come critical diagnostic lab panels that guide care.
+              </p>
             </div>
             <div className="bg-[#141A1F] rounded-[6px] border border-white/10 p-4 space-y-2">
               <div className="aspect-video w-full overflow-hidden rounded bg-black mb-2">
@@ -518,6 +521,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <p className="font-serif text-[15px] text-white/90 leading-snug">
                 Two lists. The differences between them are easy to miss.
               </p>
+              <p className="text-[12px] text-white/70 font-sans leading-snug">
+                Subtle dose titrations, omitted therapies, and out-of-range lab markers hide across paperwork.
+              </p>
             </div>
             <div className="bg-[#141A1F] rounded-[6px] border border-white/10 p-4 space-y-2">
               <div className="aspect-video w-full overflow-hidden rounded bg-black mb-2">
@@ -532,6 +538,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               </div>
               <p className="font-serif text-[15px] text-white/90 leading-snug">
                 RxDiff makes every difference visible - and shows you exactly where it came from.
+              </p>
+              <p className="text-[12px] text-white/70 font-sans leading-snug">
+                Verifying medications across care transitions and auditing lab reports against printed ranges.
               </p>
               <div className="pt-2 border-t border-white/10 flex items-start gap-1 text-[11px] font-sans text-white/70 leading-snug">
                 <WarningIcon className="w-3.5 h-3.5 text-[#E5A93C] shrink-0 mt-0.5" />
@@ -659,7 +668,7 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
             <div className="flex items-center gap-2 mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
               <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#38BDF8] bg-[#38BDF8]/10 px-3 py-1 rounded-[3px] border border-[#38BDF8]/20">
-                Clinical Evidence Transformation // Vol. 01
+                Unified Clinical Evidence Transformation // Medications & Lab Diagnostics
               </span>
             </div>
 
@@ -667,21 +676,24 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               The important changes can hide between two lists.
             </h1>
 
-            <p className="font-sans text-[clamp(14px,1.5vw,17px)] text-white/75 mt-3.5 max-w-[560px] leading-relaxed">
+            <p className="font-sans text-[clamp(14px,1.5vw,17px)] text-white/75 mt-3.5 max-w-[620px] leading-relaxed">
               RxDiff reveals what changed and links every flag back to its source.
+              <span className="block text-white/60 text-[13px] mt-1.5">
+                Uniting discharge medication reconciliation with verified lab report range and co-abnormality review.
+              </span>
             </p>
 
             {/* Document Citation Chips anchored to the physical papers on desk */}
             <div className="hidden md:flex items-center justify-between w-full max-w-[940px] mt-8 px-4 pointer-events-none opacity-85">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-black/60 border border-white/15 backdrop-blur-md text-[11px] font-mono text-white/80 shadow-lg">
-                <span className="text-[#38BDF8] font-bold">✦ DOC A</span>
+                <span className="text-[#38BDF8] font-bold">✦ RX RECONCILIATION</span>
                 <span className="text-white/30">|</span>
-                <span>Home Prescriptions · 4 Active Rx</span>
+                <span>Home List ↔ Discharge Orders</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-black/60 border border-white/15 backdrop-blur-md text-[11px] font-mono text-white/80 shadow-lg">
-                <span className="text-[#2E6B56] font-bold">✦ DOC B</span>
+                <span className="text-[#2E6B56] font-bold">✦ LAB DIAGNOSTICS</span>
                 <span className="text-white/30">|</span>
-                <span>Hospital Discharge Order · Room 412</span>
+                <span>Printed Ranges & Co-Abnormalities</span>
               </div>
             </div>
 
@@ -871,6 +883,17 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
                     Frequency: 1× daily → 2× daily
                   </p>
 
+                  {/* Diagnostic Lab Context Preview */}
+                  <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-white/70">
+                    <span className="flex items-center gap-1 text-[#38BDF8]">
+                      <span className="w-1 h-1 rounded-full bg-[#38BDF8]" />
+                      <span>Lab Context</span>
+                    </span>
+                    <span className="text-white/50">
+                      Correlated with Fasting Glucose & HbA1c
+                    </span>
+                  </div>
+
                   {/* Revealed Neutral Question after connector links */}
                   <div
                     ref={questionRef}
@@ -977,6 +1000,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <h2 className="font-serif text-[clamp(20px,6vw,32px)] font-normal text-white leading-snug">
                 You leave the hospital with a new list of medicines.
               </h2>
+              <p className="font-sans text-[12px] text-white/70 mt-1 leading-snug">
+                Along with altered prescriptions come critical diagnostic lab panels that guide care.
+              </p>
             </div>
           </div>
 
@@ -995,6 +1021,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <h2 className="font-serif text-[clamp(20px,6vw,32px)] font-normal text-white leading-snug">
                 Two lists. The differences between them are easy to miss.
               </h2>
+              <p className="font-sans text-[12px] text-white/70 mt-1 leading-snug">
+                Subtle dose titrations, omitted therapies, and out-of-range lab markers hide across paperwork.
+              </p>
             </div>
           </div>
 
@@ -1013,6 +1042,9 @@ export const StoryIntro: React.FC<StoryIntroProps> = ({ onSkip, onInspectEvidenc
               <h2 className="font-serif text-[clamp(20px,6vw,32px)] font-normal text-white leading-snug">
                 RxDiff makes every difference visible - and shows you exactly where it came from.
               </h2>
+              <p className="font-sans text-[12px] text-white/70 mt-1 leading-snug">
+                Verifying medications across care transitions and auditing lab reports against printed ranges.
+              </p>
               <div className="pt-2 border-t border-white/20 flex items-start gap-1 text-[11px] font-sans text-white/70">
                 <WarningIcon className="w-3.5 h-3.5 text-[#E5A93C] shrink-0 mt-0.5" />
                 <span>Confirm every difference with a doctor or pharmacist.</span>
